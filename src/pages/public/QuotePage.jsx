@@ -21,6 +21,7 @@ import {
 import { WhatsAppIcon } from '../../components/shared/SocialIcons'
 import { useAppStore } from '../../store/useAppStore'
 import { uploadToSupabaseStorage } from '../../lib/supabaseStorage'
+import { compressImage } from '../../lib/imageCompressor'
 
 export default function QuotePage() {
   const [searchParams] = useSearchParams()
@@ -67,8 +68,9 @@ export default function QuotePage() {
       const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
       const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
 
-      // Upload to Supabase Storage in the background
-      const cloudUrl = await uploadToSupabaseStorage('customer-uploads', file, 'quotes')
+      // Auto-compress images client-side before uploading to Supabase Storage
+      const fileToUpload = isImage ? await compressImage(file, { maxWidth: 1920, quality: 0.82 }) : file
+      const cloudUrl = await uploadToSupabaseStorage('customer-uploads', fileToUpload, 'quotes')
 
       if (isImage) {
         const reader = new FileReader()
@@ -78,7 +80,7 @@ export default function QuotePage() {
             {
               id: fileId,
               name: file.name,
-              size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+              size: `${(fileToUpload.size / (1024 * 1024)).toFixed(2)} MB`,
               type: file.type,
               url: cloudUrl || event.target.result,
               isImage: true,
@@ -87,7 +89,7 @@ export default function QuotePage() {
             },
           ])
         }
-        reader.readAsDataURL(file)
+        reader.readAsDataURL(fileToUpload)
       } else {
         setUploadedFiles((prev) => [
           ...prev,

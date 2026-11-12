@@ -230,6 +230,7 @@ export default function AdminServicesPage() {
               {/* Tap-to-select and Drag & Drop Image */}
               <ImageDropzone
                 multiple={false}
+                bucket="service-images"
                 value={formData.image}
                 onChange={(val) => setFormData({ ...formData, image: val })}
                 label="Service Header Image (Tap to select or Drag & Drop)"

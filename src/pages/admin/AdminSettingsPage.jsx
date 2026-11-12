@@ -13,7 +13,7 @@ import {
   Lock
 } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
-import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon } from '../../components/shared/SocialIcons'
+import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon, LinkedInIcon } from '../../components/shared/SocialIcons'
 
 export default function AdminSettingsPage() {
   const { companyInfo, updateCompanyInfo, adminUser, setAdminAuth } = useAppStore()
@@ -32,6 +32,7 @@ export default function AdminSettingsPage() {
       instagram: companyInfo.socials?.instagram || '',
       facebook: companyInfo.socials?.facebook || '',
       twitter: companyInfo.socials?.twitter || '',
+      linkedin: companyInfo.socials?.linkedin || '',
     },
   })
 
@@ -49,6 +50,7 @@ export default function AdminSettingsPage() {
         instagram: companyInfo.socials?.instagram || '',
         facebook: companyInfo.socials?.facebook || '',
         twitter: companyInfo.socials?.twitter || '',
+        linkedin: companyInfo.socials?.linkedin || '',
       },
     })
   }, [companyInfo])
@@ -214,7 +216,7 @@ export default function AdminSettingsPage() {
                   <Share2 className="w-3.5 h-3.5 text-[#d9a323]" /> Social Media Profiles
                 </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="space-y-1">
                     <label className="text-[#8e9196] flex items-center gap-1">
                       <InstagramIcon className="w-3 h-3 text-[#d9a323]" /> Instagram URL
@@ -265,6 +267,24 @@ export default function AdminSettingsPage() {
                         })
                       }
                       placeholder="https://x.com/..."
+                      className="w-full bg-[#111111] border border-white/10 rounded-lg p-2.5 text-xs text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[#8e9196] flex items-center gap-1">
+                      <LinkedInIcon className="w-3 h-3 text-[#d9a323]" /> LinkedIn URL
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.socials.linkedin}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          socials: { ...formData.socials, linkedin: e.target.value },
+                        })
+                      }
+                      placeholder="https://linkedin.com/company/..."
                       className="w-full bg-[#111111] border border-white/10 rounded-lg p-2.5 text-xs text-white"
                     />
                   </div>

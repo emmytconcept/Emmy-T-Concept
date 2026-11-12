@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, MessageCircle } from 'lucide-react'
-import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon } from '../../components/shared/SocialIcons'
+import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon, LinkedInIcon } from '../../components/shared/SocialIcons'
 import { useAppStore } from '../../store/useAppStore'
 
 export default function ContactPage() {
@@ -158,6 +158,17 @@ export default function ContactPage() {
                   >
                     <TwitterIcon className="w-4 h-4" />
                   </a>
+                  {companyInfo.socials?.linkedin && (
+                    <a
+                      href={companyInfo.socials.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-lg bg-white/5 text-[#c6c8cc] hover:text-[#d9a323] hover:bg-white/10 transition-colors"
+                      aria-label="LinkedIn"
+                    >
+                      <LinkedInIcon className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,10 +1,12 @@
 import React, { useRef, useState } from 'react'
-import { UploadCloud, Image as ImageIcon, X, Plus } from 'lucide-react'
+import { UploadCloud, Image as ImageIcon, X, Plus, Loader2 } from 'lucide-react'
+import { compressImage } from '../../lib/imageCompressor'
+import { uploadToSupabaseStorage } from '../../lib/supabaseStorage'
 
 /**
  * ImageDropzone
  * Reusable Drag-and-Drop + Tap-to-select image uploader.
- * Converts selected files to Data URLs (base64) so they persist in state & local storage.
+ * Automatically compresses large images client-side before uploading directly to Supabase Storage.
  *
  * Props:
  * - multiple: boolean (default false)
@@ -12,18 +14,21 @@ import { UploadCloud, Image as ImageIcon, X, Plus } from 'lucide-react'
  * - onChange: (newVal) => void
  * - label: string
  * - helperText: string
+ * - bucket: string (default 'portfolio-images')
  */
 export default function ImageDropzone({
   multiple = false,
   value,
   onChange,
   label = 'Upload Image',
-  helperText = 'PNG, JPG, WEBP up to 5MB',
+  helperText = 'Auto-compressed & stored on Supabase',
+  bucket = 'portfolio-images',
 }) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef(null)
 
-  const handleFiles = (files) => {
+  const handleFiles = async (files) => {
     if (!files || files.length === 0) return
 
     const fileList = Array.from(files).filter((file) =>
@@ -31,30 +36,59 @@ export default function ImageDropzone({
     )
 
     if (fileList.length === 0) return
+    setIsUploading(true)
 
-    if (!multiple) {
-      // Single file mode
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        onChange(e.target.result)
-      }
-      reader.readAsDataURL(fileList[0])
-    } else {
-      // Multiple files mode
-      const currentList = Array.isArray(value) ? [...value] : []
-      let pendingCount = fileList.length
+    try {
+      if (!multiple) {
+        // 1. Compress image to max 1920px & ~82% quality
+        const compressed = await compressImage(fileList[0], {
+          maxWidth: 1920,
+          maxHeight: 1920,
+          quality: 0.82,
+        })
 
-      fileList.forEach((file) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          currentList.push(e.target.result)
-          pendingCount -= 1
-          if (pendingCount === 0) {
-            onChange(currentList)
+        // 2. Upload to Supabase Storage
+        const publicUrl = await uploadToSupabaseStorage(bucket, compressed, 'uploads')
+
+        if (publicUrl) {
+          onChange(publicUrl)
+        } else {
+          // Fallback to data URL if offline
+          const reader = new FileReader()
+          reader.onload = (e) => onChange(e.target.result)
+          reader.readAsDataURL(compressed)
+        }
+      } else {
+        // Multiple files mode
+        const currentList = Array.isArray(value) ? [...value] : []
+
+        for (const file of fileList) {
+          const compressed = await compressImage(file, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 0.82,
+          })
+
+          const publicUrl = await uploadToSupabaseStorage(bucket, compressed, 'uploads')
+          if (publicUrl) {
+            currentList.push(publicUrl)
+          } else {
+            const dataUrl = await new Promise((res) => {
+              const reader = new FileReader()
+              reader.onload = (e) => res(e.target.result)
+              reader.readAsDataURL(compressed)
+            })
+            currentList.push(dataUrl)
           }
         }
-        reader.readAsDataURL(file)
-      })
+
+        onChange(currentList)
+      }
+    } catch (err) {
+      console.warn('ImageDropzone upload error:', err)
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -111,8 +145,16 @@ export default function ImageDropzone({
         onChange={(e) => handleFiles(e.target.files)}
       />
 
+      {/* Uploading state banner */}
+      {isUploading && (
+        <div className="p-3 rounded-xl bg-[#d9a323]/10 border border-[#d9a323]/30 flex items-center justify-center gap-2 text-xs text-[#d9a323] font-medium">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Compressing & uploading to Supabase Storage...</span>
+        </div>
+      )}
+
       {/* Single Image Mode */}
-      {!multiple && (
+      {!multiple && !isUploading && (
         <div>
           {value ? (
             <div className="relative group rounded-xl overflow-hidden border border-[#d9a323]/40 bg-neutral-900 aspect-video max-h-52 flex items-center justify-center">
@@ -159,7 +201,7 @@ export default function ImageDropzone({
                   Tap to browse or drag & drop photo here
                 </p>
                 <p className="text-[11px] text-[#8e9196] mt-0.5">
-                  High-resolution photo for printing preview
+                  Auto-compressed before storing on Supabase
                 </p>
               </div>
             </div>
@@ -168,7 +210,7 @@ export default function ImageDropzone({
       )}
 
       {/* Multiple Images Mode */}
-      {multiple && (
+      {multiple && !isUploading && (
         <div className="space-y-3">
           {/* Thumbnails grid */}
           {Array.isArray(value) && value.length > 0 && (
@@ -221,7 +263,7 @@ export default function ImageDropzone({
                 Tap to select or drag & drop project images
               </p>
               <p className="text-[11px] text-[#8e9196]">
-                Upload multiple angles, closeups & finished prints
+                Upload multiple angles; compressed & saved to Supabase
               </p>
             </div>
           </div>
@@ -230,4 +272,3 @@ export default function ImageDropzone({
     </div>
   )
 }
-

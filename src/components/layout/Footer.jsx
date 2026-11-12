@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Phone, Mail, MapPin, Clock, ArrowRight } from 'lucide-react'
-import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon } from '../shared/SocialIcons'
+import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon, LinkedInIcon } from '../shared/SocialIcons'
 import { useAppStore } from '../../store/useAppStore'
 
 export default function Footer() {
@@ -54,6 +54,17 @@ export default function Footer() {
               >
                 <TwitterIcon className="w-4 h-4" />
               </a>
+              {companyInfo.socials?.linkedin && (
+                <a
+                  href={companyInfo.socials.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c6c8cc] hover:text-[#d9a323] hover:border-[#d9a323]/50 transition-all duration-200"
+                  aria-label="LinkedIn"
+                >
+                  <LinkedInIcon className="w-4 h-4" />
+                </a>
+              )}
               <a
                 href={`https://wa.me/${(companyInfo.whatsapp || '').replace(/[^0-9]/g, '')}`}
                 target="_blank"

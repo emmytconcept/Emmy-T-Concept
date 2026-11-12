@@ -21,6 +21,7 @@ export const useAppStore = create(
           facebook: "",
           twitter: "",
           whatsapp: "",
+          linkedin: "",
         },
       },
       updateCompanyInfo: (updates) => {
@@ -354,7 +355,7 @@ export const useAppStore = create(
             email: "",
             address: "",
             openingHours: "",
-            socials: { instagram: "", facebook: "", twitter: "", whatsapp: "" },
+            socials: { instagram: "", facebook: "", twitter: "", whatsapp: "", linkedin: "" },
           },
           announcement: { active: true, text: "", link: "/quote" },
           portfolioCategories: [],
