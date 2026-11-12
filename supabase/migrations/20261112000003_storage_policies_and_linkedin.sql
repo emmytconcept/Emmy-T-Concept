@@ -41,3 +41,4 @@ SET value = jsonb_set(
   '"https://linkedin.com/company/emmytconcept"'
 )
 WHERE section = 'company_info' AND key = 'profile';
+

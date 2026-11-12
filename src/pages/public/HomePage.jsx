@@ -36,7 +36,7 @@ const iconMap = {
 }
 
 export default function HomePage() {
-  const { services, portfolio, testimonials, companyInfo, submitCustomerReview } = useAppStore()
+  const { services, portfolio, portfolioCategories, testimonials, companyInfo, submitCustomerReview } = useAppStore()
   const [activeCategory, setActiveCategory] = useState('all')
   const [activeModalProject, setActiveModalProject] = useState(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -219,17 +219,14 @@ export default function HomePage() {
 
             {/* Mobile Mini Panoramic Arc (3 curated images on the exact same curved stage, < sm) */}
             <div className="flex sm:hidden items-end justify-center gap-2 max-w-sm mx-auto px-2 [perspective:800px] min-h-[280px] pb-4">
-              {[
-                portfolio[0] || portfolio[0], // Apex Brand Identity
-                portfolio[1] || portfolio[1], // Grand Royale Mega Banner (Center)
-                portfolio[3] || portfolio[2], // Vanguard Corporate Uniforms
-              ].map((proj, idx) => {
+              {portfolio.slice(0, 3).map((proj, idx) => {
+                if (!proj) return null
                 const mobileConfigs = [
                   { rotate: '-14deg', y: '12px', scale: '0.92', zIndex: 'z-0' },
                   { rotate: '0deg', y: '-8px', scale: '1.06', zIndex: 'z-10' },
                   { rotate: '14deg', y: '12px', scale: '0.92', zIndex: 'z-0' },
                 ]
-                const conf = mobileConfigs[idx]
+                const conf = mobileConfigs[idx] || mobileConfigs[0]
 
                 return (
                   <div
@@ -416,13 +413,16 @@ export default function HomePage() {
 
             {/* Filter Tabs */}
             <div className="flex flex-wrap gap-2">
-              {[
-                { id: 'all', label: 'All' },
-                { id: 'business-branding', label: 'Branding' },
-                { id: 'banner-printing', label: 'Banners' },
-                { id: 'packaging-design', label: 'Packaging' },
-                { id: 'clothing-printing', label: 'Apparel' },
-              ].map((tab) => (
+              {(portfolioCategories && portfolioCategories.length > 0
+                ? portfolioCategories.slice(0, 5)
+                : [
+                    { id: 'all', label: 'All' },
+                    { id: 'business-branding', label: 'Branding' },
+                    { id: 'banner-printing', label: 'Banners' },
+                    { id: 'packaging-design', label: 'Packaging' },
+                    { id: 'clothing-printing', label: 'Apparel' },
+                  ]
+              ).map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveCategory(tab.id)}
