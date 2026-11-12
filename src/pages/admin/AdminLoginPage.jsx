@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Lock, Mail, ArrowRight, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react'
+import { Lock, Mail, ArrowRight, AlertCircle, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { loginWithSupabase } from '../../lib/supabaseAuth'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('admin@emmytconcept.com')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -82,15 +83,26 @@ export default function AdminLoginPage() {
             <label className="text-[#c6c8cc] font-medium flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5 text-[#d9a323]" /> Security Password
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password..."
-              className="w-full bg-[#111111] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder-neutral-600 outline-none focus:border-[#d9a323]"
-              autoComplete="current-password"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password..."
+                className="w-full bg-[#111111] border border-white/10 rounded-xl p-3.5 pr-11 text-sm text-white placeholder-neutral-600 outline-none focus:border-[#d9a323]"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8e9196] hover:text-[#d9a323] transition-colors"
+                tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <button

@@ -10,7 +10,9 @@ import {
   Shield,
   ExternalLink,
   Share2,
-  Lock
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon, LinkedInIcon } from '../../components/shared/SocialIcons'
@@ -59,6 +61,7 @@ export default function AdminSettingsPage() {
   const [adminName, setAdminName] = useState(adminUser?.name || 'Emmy-T Director')
   const [adminEmail, setAdminEmail] = useState(adminUser?.email || 'admin@emmytconcept.com')
   const [newPassword, setNewPassword] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
 
   const [savedSuccess, setSavedSuccess] = useState(false)
 
@@ -349,13 +352,24 @@ export default function AdminSettingsPage() {
                   <Lock className="w-3.5 h-3.5 text-[#d9a323]" />
                   <span>Update Admin Password</span>
                 </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password (optional)"
-                  className="w-full bg-[#111111] border border-white/10 rounded-xl p-3 text-sm text-white placeholder-neutral-600"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password (optional)"
+                    className="w-full bg-[#111111] border border-white/10 rounded-xl p-3 pr-11 text-sm text-white placeholder-neutral-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8e9196] hover:text-[#d9a323] transition-colors"
+                    tabIndex={-1}
+                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-2 flex items-center justify-end">
