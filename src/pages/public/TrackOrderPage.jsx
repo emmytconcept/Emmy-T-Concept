@@ -188,7 +188,7 @@ export default function TrackOrderPage() {
                 type="text"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
-                placeholder="Enter Reference ID (e.g. ENQ-101) or Phone Number..."
+                placeholder="Enter your Order Reference ID or Phone Number..."
                 className="w-full bg-[#111111] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#d9a323] transition-colors"
                 autoFocus
               />
@@ -202,25 +202,11 @@ export default function TrackOrderPage() {
             </button>
           </form>
 
-          {/* Quick Helper Chips */}
+          {/* Quick Helper */}
           <div className="mt-3 flex flex-wrap items-center justify-between text-xs text-[#8e9196] pt-3 border-t border-white/5 gap-2">
-            <span className="flex items-center gap-1.5 flex-wrap">
+            <span className="flex items-center gap-1.5 text-[11px] text-[#8e9196]">
               <HelpCircle className="w-3.5 h-3.5 text-[#d9a323]" />
-              Quick Demo IDs: 
-              <button
-                type="button"
-                onClick={() => { setInputVal('enq-101'); performSearch('enq-101'); }}
-                className="text-[#d9a323] hover:underline font-mono bg-white/5 px-2 py-0.5 rounded"
-              >
-                ENQ-101
-              </button>
-              <button
-                type="button"
-                onClick={() => { setInputVal('enq-102'); performSearch('enq-102'); }}
-                className="text-[#d9a323] hover:underline font-mono bg-white/5 px-2 py-0.5 rounded"
-              >
-                ENQ-102
-              </button>
+              Enter the Reference ID provided on your quotation or booking confirmation
             </span>
             <span className="text-[11px] text-[#8e9196]">
               Synchronized directly with central print press
