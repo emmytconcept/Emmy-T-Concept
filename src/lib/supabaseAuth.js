@@ -24,7 +24,7 @@ export async function loginWithSupabase(email, password) {
       .from('profiles')
       .select('full_name, role, is_active')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
 
     if (profile) {
       if (!profile.is_active) {
@@ -71,7 +71,7 @@ export async function getSupabaseSessionUser() {
       .from('profiles')
       .select('full_name, role, is_active')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
 
     if (profile) {
       if (!profile.is_active) return null
