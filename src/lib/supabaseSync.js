@@ -338,6 +338,8 @@ export const api = {
           res.companyInfo = row.value
         } else if (row.section === 'announcement' && row.key === 'current') {
           res.announcement = row.value
+        } else if (row.section === 'portfolio' && row.key === 'categories') {
+          res.portfolioCategories = row.value
         }
       })
       return res

@@ -1,40 +1,15 @@
 // ==============================================================================
-// EMMY-T CONCEPT — Core UI Configurations & Baseline Metadata
-// Note: All catalog items (Services, Portfolio Showcase, Testimonials, Announcements)
-// are dynamically sourced from Supabase. Offline mock data arrays have been purged.
+// EMMY-T CONCEPT — UI Design Tokens & System Status Dictionaries
+// All dynamic data (Company Details, Social Links, Portfolio Categories, Services,
+// Testimonials, Content) are managed dynamically via Supabase and Admin Settings.
 // ==============================================================================
 
-export const COMPANY_INFO = {
-  name: "EMMY-T CONCEPT",
-  tagline: "Professional Graphic Design, Digital Printing, Advertising & Corporate Branding",
-  shortDesc: "Establishing bold brand identities and delivering high-definition printing solutions with luxury craftsmanship and unmatched attention to detail.",
-  phone: "+234 814 624 3788",
-  whatsapp: "+2348146243788",
-  email: "emmytconcept@gmail.com",
-  address: "Lagos, Nigeria",
-  openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
-  socials: {
-    instagram: "https://instagram.com/emmytconcept",
-    facebook: "https://facebook.com/emmytconcept",
-    twitter: "https://twitter.com/emmytconcept",
-    whatsapp: "https://wa.me/2348146243788",
-  },
-  colors: {
-    black: "#080808",
-    gold: "#d9a323",
-    silver: "#c6c8cc",
-    white: "#ffffff",
-  },
+export const BRAND_COLORS = {
+  black: "#080808",
+  gold: "#d9a323",
+  silver: "#c6c8cc",
+  white: "#ffffff",
 }
-
-export const PORTFOLIO_CATEGORIES = [
-  { id: "all", label: "All Projects" },
-  { id: "graphic-design", label: "Graphic Design" },
-  { id: "banner-printing", label: "Banners & Signs" },
-  { id: "business-branding", label: "Business Branding" },
-  { id: "packaging-design", label: "Packaging" },
-  { id: "clothing-printing", label: "Apparel & Fabric" },
-]
 
 export const ORDER_STATUSES = {
   new_enquiry: { label: "New Enquiry", bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/30" },

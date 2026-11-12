@@ -604,7 +604,7 @@ export default function HomePage() {
                     <Link
                       to={`/quote?service=${activeModalProject.category}`}
                       onClick={() => setActiveModalProject(null)}
-                      className="px-6 py-3 bg-gradient-to-r from-[#d9a323] to-[#b88613] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg hover:scale-105 transition-all"
+                      className="px-6 py-3 bg-[#d9a323] hover:bg-[#e5b338] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-md hover:scale-105 active:scale-95 transition-all"
                     >
                       Request Similar Project
                     </Link>

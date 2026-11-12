@@ -11,13 +11,16 @@ import {
 } from 'lucide-react'
 import { WhatsAppIcon } from '../../components/shared/SocialIcons'
 import { useAppStore } from '../../store/useAppStore'
-import { PORTFOLIO_CATEGORIES } from '../../lib/constants'
 
 export default function PortfolioPage() {
-  const { portfolio, companyInfo } = useAppStore()
+  const { portfolio, portfolioCategories, companyInfo } = useAppStore()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [activeModalProject, setActiveModalProject] = useState(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  const categories = portfolioCategories && portfolioCategories.length > 0
+    ? portfolioCategories
+    : [{ id: 'all', label: 'All Projects' }]
 
   const filteredProjects = selectedCategory === 'all'
     ? portfolio
@@ -75,7 +78,7 @@ export default function PortfolioPage() {
 
         {/* Filter Bar */}
         <div className="flex flex-wrap items-center justify-center gap-2 pt-8">
-          {PORTFOLIO_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
@@ -272,7 +275,7 @@ export default function PortfolioPage() {
                 <Link
                   to={`/quote?service=${activeModalProject.category}`}
                   onClick={() => setActiveModalProject(null)}
-                  className="px-6 py-3 bg-gradient-to-r from-[#d9a323] to-[#b88613] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg hover:scale-105 transition-all"
+                  className="px-6 py-3 bg-[#d9a323] hover:bg-[#e5b338] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-md hover:scale-105 active:scale-95 transition-all"
                 >
                   Request Similar Project
                 </Link>

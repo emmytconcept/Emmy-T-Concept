@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { COMPANY_INFO } from '../lib/constants'
 import { api } from '../lib/supabaseSync'
 import { getSupabaseSessionUser, logoutSupabase } from '../lib/supabaseAuth'
 
@@ -8,7 +7,22 @@ export const useAppStore = create(
   persist(
     (set, get) => ({
       // Brand & Content CMS (Loaded dynamically from Supabase `content` table)
-      companyInfo: COMPANY_INFO,
+      companyInfo: {
+        name: "EMMY-T CONCEPT",
+        tagline: "",
+        shortDesc: "",
+        phone: "",
+        whatsapp: "",
+        email: "",
+        address: "",
+        openingHours: "",
+        socials: {
+          instagram: "",
+          facebook: "",
+          twitter: "",
+          whatsapp: "",
+        },
+      },
       updateCompanyInfo: (updates) => {
         const next = { ...get().companyInfo, ...updates }
         set({ companyInfo: next })
@@ -17,7 +31,7 @@ export const useAppStore = create(
 
       announcement: {
         active: true,
-        text: "⚡ Elevate your brand with 20% off all Large-Format Banner & Roll-up Printing this month!",
+        text: "",
         link: "/quote",
       },
       updateAnnouncement: (announcement) => {
@@ -69,6 +83,31 @@ export const useAppStore = create(
           portfolio: state.portfolio.filter((p) => p.id !== id),
         }))
         api.deletePortfolio(id)
+      },
+
+      // Portfolio Categories (Managed dynamically in Supabase `content` table)
+      portfolioCategories: [],
+      setPortfolioCategories: (categories) => {
+        set({ portfolioCategories: categories })
+        api.updateContent('portfolio', 'categories', categories)
+      },
+      addPortfolioCategory: (category) => {
+        const current = get().portfolioCategories || []
+        const next = [...current, category]
+        set({ portfolioCategories: next })
+        api.updateContent('portfolio', 'categories', next)
+      },
+      updatePortfolioCategory: (id, updates) => {
+        const current = get().portfolioCategories || []
+        const next = current.map((c) => (c.id === id ? { ...c, ...updates } : c))
+        set({ portfolioCategories: next })
+        api.updateContent('portfolio', 'categories', next)
+      },
+      deletePortfolioCategory: (id) => {
+        const current = get().portfolioCategories || []
+        const next = current.filter((c) => c.id !== id)
+        set({ portfolioCategories: next })
+        api.updateContent('portfolio', 'categories', next)
       },
 
       // Orders & Enquiries (Live Supabase `enquiries` table)
@@ -279,6 +318,7 @@ export const useAppStore = create(
             quotations: quotations !== null ? quotations : state.quotations,
             companyInfo: content?.companyInfo || state.companyInfo,
             announcement: content?.announcement || state.announcement,
+            portfolioCategories: content?.portfolioCategories || state.portfolioCategories,
           }))
         } catch (err) {
           console.warn('syncWithSupabase error:', err)
@@ -288,10 +328,11 @@ export const useAppStore = create(
     }),
     {
       name: "emmyt-concept-storage",
-      version: 6, // Bumped to purge any stale offline mock arrays from client's browser
+      version: 7, // Bumped to purge any stale offline mock arrays from client's browser
       partialize: (state) => ({
         companyInfo: state.companyInfo,
         announcement: state.announcement,
+        portfolioCategories: state.portfolioCategories,
         services: state.services,
         portfolio: state.portfolio,
         testimonials: state.testimonials,
@@ -304,6 +345,19 @@ export const useAppStore = create(
         return {
           adminUser: { isAuthenticated: false, id: null, email: null, name: null, role: null },
           authLoading: true,
+          companyInfo: {
+            name: "EMMY-T CONCEPT",
+            tagline: "",
+            shortDesc: "",
+            phone: "",
+            whatsapp: "",
+            email: "",
+            address: "",
+            openingHours: "",
+            socials: { instagram: "", facebook: "", twitter: "", whatsapp: "" },
+          },
+          announcement: { active: true, text: "", link: "/quote" },
+          portfolioCategories: [],
           services: [],
           portfolio: [],
           testimonials: [],

@@ -1,18 +1,43 @@
 import React, { useState } from 'react'
-import { Plus, Edit2, Trash2, Star, Eye, UploadCloud, X, CheckCircle2, Images } from 'lucide-react'
+import { Plus, Edit2, Trash2, Star, Eye, UploadCloud, X, CheckCircle2, Images, Tag } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
-import { PORTFOLIO_CATEGORIES } from '../../lib/constants'
 import ImageDropzone from '../../components/shared/ImageDropzone'
 
 export default function AdminPortfolioPage() {
-  const { portfolio, addPortfolioProject, updatePortfolioProject, deletePortfolioProject } = useAppStore()
+  const {
+    portfolio,
+    addPortfolioProject,
+    updatePortfolioProject,
+    deletePortfolioProject,
+    portfolioCategories,
+    addPortfolioCategory,
+    deletePortfolioCategory,
+  } = useAppStore()
+
   const [modalOpen, setModalOpen] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
 
+  // Category Manager modal state
+  const [catModalOpen, setCatModalOpen] = useState(false)
+  const [newCatLabel, setNewCatLabel] = useState('')
+
+  const activeCategories = portfolioCategories && portfolioCategories.length > 0
+    ? portfolioCategories
+    : [
+        { id: 'all', label: 'All Projects' },
+        { id: 'graphic-design', label: 'Graphic Design' },
+        { id: 'banner-printing', label: 'Banners & Signs' },
+        { id: 'business-branding', label: 'Business Branding' },
+        { id: 'packaging-design', label: 'Packaging' },
+        { id: 'clothing-printing', label: 'Apparel & Fabric' },
+      ]
+
+  const selectableCategories = activeCategories.filter((c) => c.id !== 'all')
+
   const [formData, setFormData] = useState({
     title: '',
-    category: 'business-branding',
-    categoryLabel: 'Business Branding',
+    category: selectableCategories[0]?.id || 'banner-printing',
+    categoryLabel: selectableCategories[0]?.label || 'Banners & Signs',
     image: '',
     images: [],
     description: '',
@@ -23,10 +48,11 @@ export default function AdminPortfolioPage() {
 
   const handleOpenAdd = () => {
     setEditingProject(null)
+    const defaultCat = selectableCategories[0] || { id: 'banner-printing', label: 'Banners & Signs' }
     setFormData({
       title: '',
-      category: 'banner-printing',
-      categoryLabel: 'Banners & Signs',
+      category: defaultCat.id,
+      categoryLabel: defaultCat.label,
       image: '',
       images: [],
       description: '',
@@ -56,7 +82,7 @@ export default function AdminPortfolioPage() {
 
   const handleSave = (e) => {
     e.preventDefault()
-    const foundCat = PORTFOLIO_CATEGORIES.find((c) => c.id === formData.category)
+    const foundCat = activeCategories.find((c) => c.id === formData.category)
 
     const galleryList = Array.isArray(formData.images) && formData.images.length > 0
       ? formData.images
@@ -85,6 +111,26 @@ export default function AdminPortfolioPage() {
     setModalOpen(false)
   }
 
+  const handleAddCategory = (e) => {
+    e.preventDefault()
+    const trimmed = newCatLabel.trim()
+    if (!trimmed) return
+    const id = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    if (activeCategories.some((c) => c.id === id)) {
+      alert('A category with this ID already exists.')
+      return
+    }
+    addPortfolioCategory({ id, label: trimmed })
+    setNewCatLabel('')
+  }
+
+  const handleDeleteCategory = (catId) => {
+    if (catId === 'all') return
+    if (confirm(`Are you sure you want to delete this category?`)) {
+      deletePortfolioCategory(catId)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Title & Action */}
@@ -96,12 +142,20 @@ export default function AdminPortfolioPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="px-5 py-2.5 bg-[#d9a323] hover:brightness-110 text-black text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 shadow"
-        >
-          <Plus className="w-4 h-4" /> Upload New Project
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setCatModalOpen(true)}
+            className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
+          >
+            <Tag className="w-3.5 h-3.5 text-[#d9a323]" /> Manage Categories ({selectableCategories.length})
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className="px-5 py-2.5 bg-[#d9a323] hover:bg-[#e5b338] text-black text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+          >
+            <Plus className="w-4 h-4" /> Upload New Project
+          </button>
+        </div>
       </div>
 
       {/* Portfolio Grid */}
@@ -144,56 +198,126 @@ export default function AdminPortfolioPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-white/5 border-t border-white/5 flex items-center justify-between">
-              <span className="text-[11px] text-[#25D366] flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Published
-              </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleOpenEdit(proj)}
-                  className="p-1.5 rounded bg-white/10 hover:bg-[#d9a323] hover:text-black text-white transition-colors"
-                  title="Edit Project"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Delete "${proj.title}" from portfolio?`)) {
-                      deletePortfolioProject(proj.id)
-                    }
-                  }}
-                  className="p-1.5 rounded bg-white/10 hover:bg-red-500 text-white transition-colors"
-                  title="Delete Project"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+            <div className="p-4 border-t border-white/5 flex items-center justify-end gap-2 bg-white/[0.02]">
+              <button
+                onClick={() => handleOpenEdit(proj)}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-colors"
+                title="Edit Project"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => {
+                  if (confirm(`Delete "${proj.title}"?`)) deletePortfolioProject(proj.id)
+                }}
+                className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                title="Delete Project"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Add / Edit Project Modal with Drag & Drop */}
+      {/* =========================================================
+          MODAL: Manage Categories
+      ========================================================= */}
+      {catModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setCatModalOpen(false)}
+        >
+          <div
+            className="glass-panel rounded-3xl max-w-md w-full border border-[#d9a323]/40 p-6 sm:p-7 space-y-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Tag className="w-5 h-5 text-[#d9a323]" />
+                <h3 className="font-heading text-lg font-bold text-white">
+                  Portfolio Categories
+                </h3>
+              </div>
+              <button onClick={() => setCatModalOpen(false)} className="text-white/60 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Existing Categories List */}
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              {activeCategories.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5 text-xs"
+                >
+                  <div>
+                    <span className="font-bold text-white">{cat.label}</span>
+                    <span className="text-[10px] text-[#8e9196] font-mono ml-2">({cat.id})</span>
+                  </div>
+                  {cat.id !== 'all' && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCategory(cat.id)}
+                      className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
+                      title="Remove Category"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Add New Category Form */}
+            <form onSubmit={handleAddCategory} className="pt-3 border-t border-white/10 space-y-2 text-xs">
+              <label className="text-[#8e9196] block font-medium">Add New Category</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  value={newCatLabel}
+                  onChange={(e) => setNewCatLabel(e.target.value)}
+                  placeholder="e.g. Vehicle Branding"
+                  className="flex-1 bg-[#111111] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-[#d9a323]"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#d9a323] hover:bg-[#e5b338] text-black font-bold uppercase tracking-wider text-[11px] rounded-lg shadow"
+                >
+                  Add
+                </button>
+              </div>
+              <p className="text-[10px] text-[#8e9196]">
+                Categories sync instantly with Supabase and update across the public portfolio filters.
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          MODAL: Add / Edit Project
+      ========================================================= */}
       {modalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           onClick={() => setModalOpen(false)}
         >
           <div
-            className="glass-panel rounded-3xl max-w-2xl w-full border border-[#d9a323]/40 p-6 sm:p-8 space-y-5 shadow-2xl my-8 max-h-[90vh] overflow-y-auto"
+            className="glass-panel rounded-3xl max-w-2xl w-full border border-[#d9a323]/40 p-6 sm:p-8 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h3 className="font-heading text-xl font-bold text-white">
-                {editingProject ? 'Edit Portfolio Project' : 'Upload New Portfolio Project'}
+                {editingProject ? 'Edit Portfolio Project' : 'Upload New Portfolio Showcase'}
               </h3>
               <button onClick={() => setModalOpen(false)} className="text-white/60 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-5 text-xs">
+            <form onSubmit={handleSave} className="space-y-4 text-xs">
               <div className="space-y-1">
                 <label className="text-[#8e9196]">Project Title *</label>
                 <input
@@ -201,12 +325,12 @@ export default function AdminPortfolioPage() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Apex Corporate Identity & Roll-up Banners"
+                  placeholder="e.g. Apex Prestige Brand Identity Suite"
                   className="w-full bg-[#111111] border border-white/10 rounded-lg p-3 text-white outline-none focus:border-[#d9a323]"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[#8e9196]">Category Group *</label>
                   <select
@@ -214,7 +338,7 @@ export default function AdminPortfolioPage() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-[#111111] border border-white/10 rounded-lg p-3 text-white outline-none focus:border-[#d9a323]"
                   >
-                    {PORTFOLIO_CATEGORIES.filter((c) => c.id !== 'all').map((cat) => (
+                    {selectableCategories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.label}
                       </option>
@@ -238,35 +362,20 @@ export default function AdminPortfolioPage() {
               <ImageDropzone
                 multiple={false}
                 value={formData.image}
-                onChange={(val) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    image: val,
-                    // If no gallery images yet, also seed gallery
-                    images: prev.images.length === 0 && val ? [val] : prev.images,
-                  }))
-                }}
-                label="Primary Cover Photo (Tap to select or Drag & Drop)"
-                helperText="Primary image shown on portfolio cards"
+                onChange={(url) => setFormData({ ...formData, image: url })}
+                label="Project Cover Photo *"
               />
 
-              {/* Multiple Gallery Photos Drag & Drop */}
+              {/* Multi-Photo Gallery Drag & Drop */}
               <ImageDropzone
                 multiple={true}
                 value={formData.images}
-                onChange={(list) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    images: list,
-                    image: prev.image || list[0] || '',
-                  }))
-                }}
-                label="Multi-Angle Gallery Photos (Tap to select or Drag & Drop multiple)"
-                helperText="Allows visitors to browse with side navigation arrows"
+                onChange={(urls) => setFormData({ ...formData, images: urls })}
+                label="Full Gallery Photos (Upload multiple angles & finishes)"
               />
 
               <div className="space-y-1">
-                <label className="text-[#8e9196]">Project Summary / Specifications</label>
+                <label className="text-[#8e9196]">Description & Craftsmanship Notes</label>
                 <textarea
                   rows={3}
                   value={formData.description}
@@ -299,7 +408,7 @@ export default function AdminPortfolioPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-[#d9a323] text-black font-bold uppercase tracking-wider rounded-lg shadow hover:brightness-110"
+                  className="px-6 py-2.5 bg-[#d9a323] hover:bg-[#e5b338] text-black font-bold uppercase tracking-wider rounded-lg shadow-md active:scale-95 transition-all"
                 >
                   {editingProject ? 'Save Changes' : 'Publish Project'}
                 </button>

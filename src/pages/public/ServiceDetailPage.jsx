@@ -246,7 +246,7 @@ export default function ServiceDetailPage() {
               <div className="pt-4 space-y-3">
                 <Link
                   to={`/quote?service=${service.slug}`}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-[#d9a323] to-[#b88613] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-4 bg-[#d9a323] hover:bg-[#e5b338] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all"
                 >
                   <span>Request Quote For {service.name}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -370,7 +370,7 @@ export default function ServiceDetailPage() {
                 <Link
                   to={`/quote?service=${activeModalProject.category}`}
                   onClick={() => setActiveModalProject(null)}
-                  className="px-6 py-3 bg-gradient-to-r from-[#d9a323] to-[#b88613] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg hover:scale-105 transition-all"
+                  className="px-6 py-3 bg-[#d9a323] hover:bg-[#e5b338] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-md hover:scale-105 active:scale-95 transition-all"
                 >
                   Request Similar Project
                 </Link>

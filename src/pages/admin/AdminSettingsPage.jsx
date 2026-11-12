@@ -275,7 +275,7 @@ export default function AdminSettingsPage() {
               <div className="pt-4 border-t border-white/10 flex items-center justify-end">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-gradient-to-r from-[#d9a323] via-[#f7d779] to-[#b88613] text-black font-bold uppercase tracking-wider text-xs rounded-xl shadow-lg shadow-[#d9a323]/25 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-[#d9a323] hover:bg-[#e5b338] text-black font-bold uppercase tracking-wider text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-2"
                 >
                   <Save className="w-4 h-4" /> Save Contact Details
                 </button>
