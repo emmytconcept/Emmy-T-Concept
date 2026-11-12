@@ -163,18 +163,31 @@ export default function ImageDropzone({
                 alt="Uploaded preview"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+
+              {/* Always-visible quick delete button for touch/mobile devices */}
+              <button
+                type="button"
+                onClick={handleRemoveSingle}
+                className="sm:hidden absolute top-2 right-2 z-10 p-2 rounded-full bg-red-600/90 text-white shadow-lg active:scale-90"
+                aria-label="Remove image"
+                title="Remove Image"
+              >
+                <X className="w-4 h-4 stroke-[2.5]" />
+              </button>
+
+              {/* Desktop hover overlay (also active on focus) */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 rounded-lg bg-[#d9a323] text-black text-[11px] font-bold uppercase tracking-wider hover:brightness-110"
+                  className="px-3 py-1.5 rounded-lg bg-[#d9a323] text-black text-[11px] font-bold uppercase tracking-wider hover:brightness-110 active:scale-95"
                 >
                   Change Photo
                 </button>
                 <button
                   type="button"
                   onClick={handleRemoveSingle}
-                  className="p-1.5 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
+                  className="p-1.5 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors active:scale-95"
                   title="Remove Image"
                 >
                   <X className="w-4 h-4" />
@@ -225,11 +238,24 @@ export default function ImageDropzone({
                     alt={`Preview ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+
+                  {/* Always-visible delete button on mobile/touch screens */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleRemoveMulti(idx, e)}
+                    className="sm:hidden absolute top-1 right-1 z-10 p-1.5 rounded-full bg-red-600/95 text-white shadow-md active:scale-90"
+                    aria-label={`Remove image ${idx + 1}`}
+                    title="Remove image"
+                  >
+                    <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </button>
+
+                  {/* Desktop hover overlay */}
+                  <div className="hidden sm:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center">
                     <button
                       type="button"
                       onClick={(e) => handleRemoveMulti(idx, e)}
-                      className="p-1 rounded-full bg-red-500 text-white hover:scale-110 transition-transform shadow"
+                      className="p-1.5 rounded-full bg-red-500 text-white hover:scale-110 active:scale-95 transition-transform shadow"
                       title="Remove image"
                     >
                       <X className="w-3.5 h-3.5" />
