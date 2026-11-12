@@ -12,10 +12,13 @@ import {
   Share2,
   Lock,
   Eye,
-  EyeOff
+  EyeOff,
+  AlertCircle,
+  Loader2
 } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { InstagramIcon, FacebookIcon, TwitterIcon, WhatsAppIcon, LinkedInIcon } from '../../components/shared/SocialIcons'
+import { supabase } from '../../lib/supabase'
 
 export default function AdminSettingsPage() {
   const { companyInfo, updateCompanyInfo, adminUser, setAdminAuth } = useAppStore()
@@ -62,6 +65,9 @@ export default function AdminSettingsPage() {
   const [adminEmail, setAdminEmail] = useState(adminUser?.email || 'admin@emmytconcept.com')
   const [newPassword, setNewPassword] = useState('')
   const [showNewPassword, setShowNewPassword] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileError, setProfileError] = useState('')
+  const [profileSuccess, setProfileSuccess] = useState('')
 
   const [savedSuccess, setSavedSuccess] = useState(false)
 
@@ -72,16 +78,60 @@ export default function AdminSettingsPage() {
     setTimeout(() => setSavedSuccess(false), 3500)
   }
 
-  const handleSaveAdminProfile = (e) => {
+  const handleSaveAdminProfile = async (e) => {
     e.preventDefault()
-    setAdminAuth({
-      ...adminUser,
-      name: adminName,
-      email: adminEmail,
-    })
-    setSavedSuccess(true)
-    setTimeout(() => setSavedSuccess(false), 3500)
-    setNewPassword('')
+    setProfileError('')
+    setProfileSuccess('')
+    setProfileSaving(true)
+
+    try {
+      const updates = {}
+
+      // Update email if changed
+      if (adminEmail && adminEmail !== adminUser?.email) {
+        updates.email = adminEmail
+      }
+
+      // Update password if filled in
+      if (newPassword.trim()) {
+        if (newPassword.length < 6) {
+          setProfileError('Password must be at least 6 characters.')
+          setProfileSaving(false)
+          return
+        }
+        updates.password = newPassword
+      }
+
+      // Push to Supabase Auth if there's anything to update
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase.auth.updateUser(updates)
+        if (error) throw error
+      }
+
+      // Update display name and email in local store & profile table if available
+      setAdminAuth({
+        ...adminUser,
+        name: adminName,
+        email: adminEmail,
+      })
+
+      // Update name in public.profiles table if user id exists
+      if (adminUser?.id) {
+        await supabase
+          .from('profiles')
+          .update({ full_name: adminName, email: adminEmail })
+          .eq('id', adminUser.id)
+      }
+
+      setNewPassword('')
+      setProfileSuccess(newPassword ? 'Admin credentials and password updated successfully!' : 'Admin profile updated successfully!')
+      setTimeout(() => setProfileSuccess(''), 4000)
+    } catch (err) {
+      console.error('Update profile error:', err)
+      setProfileError(err.message || 'Failed to update credentials. Please try again.')
+    } finally {
+      setProfileSaving(false)
+    }
   }
 
   return (
@@ -323,6 +373,20 @@ export default function AdminSettingsPage() {
             </div>
 
             <form onSubmit={handleSaveAdminProfile} className="space-y-4 text-xs">
+              {profileError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-xs text-red-400">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{profileError}</span>
+                </div>
+              )}
+
+              {profileSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{profileSuccess}</span>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[#c6c8cc]">Administrator Display Name</label>
@@ -375,9 +439,11 @@ export default function AdminSettingsPage() {
               <div className="pt-2 flex items-center justify-end">
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-white/10 hover:bg-[#d9a323] hover:text-black text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
+                  disabled={profileSaving}
+                  className="px-5 py-2.5 bg-[#d9a323] hover:bg-[#e5b338] disabled:opacity-60 text-black text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2"
                 >
-                  Update Admin Profile
+                  {profileSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{profileSaving ? 'Saving...' : 'Update Admin Profile'}</span>
                 </button>
               </div>
             </form>

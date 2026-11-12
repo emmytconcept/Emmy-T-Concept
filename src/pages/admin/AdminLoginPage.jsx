@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Lock, Mail, ArrowRight, AlertCircle, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Lock, Mail, ArrowRight, AlertCircle, ArrowLeft, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { loginWithSupabase } from '../../lib/supabaseAuth'
+import { supabase } from '../../lib/supabase'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('admin@emmytconcept.com')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
 
   const { adminUser, setAdminAuth } = useAppStore()
   const navigate = useNavigate()
@@ -24,6 +27,7 @@ export default function AdminLoginPage() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    setSuccessMsg('')
 
     try {
       const user = await loginWithSupabase(email, password)
@@ -34,6 +38,28 @@ export default function AdminLoginPage() {
       setError(err.message || 'Invalid administrator credentials. Please check your email and password.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your authorized email above to receive a password reset link.')
+      return
+    }
+    setIsResetting(true)
+    setError('')
+    setSuccessMsg('')
+    try {
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin/settings`,
+      })
+      if (resetErr) throw resetErr
+      setSuccessMsg('A password reset link has been dispatched to your email address.')
+    } catch (err) {
+      console.error('Password reset error:', err)
+      setError(err.message || 'Could not send password reset email. Please try again.')
+    } finally {
+      setIsResetting(false)
     }
   }
 
@@ -63,6 +89,13 @@ export default function AdminLoginPage() {
           </div>
         )}
 
+        {successMsg && (
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-400">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4 text-xs">
           <div className="space-y-1.5">
             <label className="text-[#c6c8cc] font-medium flex items-center gap-1.5">
@@ -80,9 +113,19 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[#c6c8cc] font-medium flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-[#d9a323]" /> Security Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-[#c6c8cc] font-medium flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#d9a323]" /> Security Password
+              </label>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={isResetting}
+                className="text-[11px] text-[#d9a323] hover:underline disabled:opacity-50"
+              >
+                {isResetting ? 'Sending link...' : 'Forgot password?'}
+              </button>
+            </div>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
