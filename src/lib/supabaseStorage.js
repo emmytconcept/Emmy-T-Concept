@@ -36,3 +36,4 @@ export async function uploadToSupabaseStorage(bucket, file, pathPrefix = '') {
     return null
   }
 }
+

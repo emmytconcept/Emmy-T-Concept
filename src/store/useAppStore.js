@@ -1,28 +1,32 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { INITIAL_SERVICES, INITIAL_PORTFOLIO, COMPANY_INFO, TESTIMONIALS } from '../lib/constants'
+import { COMPANY_INFO } from '../lib/constants'
 import { api } from '../lib/supabaseSync'
 import { getSupabaseSessionUser, logoutSupabase } from '../lib/supabaseAuth'
 
 export const useAppStore = create(
   persist(
     (set, get) => ({
-      // Brand & Content CMS
+      // Brand & Content CMS (Loaded dynamically from Supabase `content` table)
       companyInfo: COMPANY_INFO,
-      updateCompanyInfo: (updates) =>
-        set((state) => ({
-          companyInfo: { ...state.companyInfo, ...updates },
-        })),
+      updateCompanyInfo: (updates) => {
+        const next = { ...get().companyInfo, ...updates }
+        set({ companyInfo: next })
+        api.updateContent('company_info', 'profile', next)
+      },
 
       announcement: {
         active: true,
         text: "⚡ Elevate your brand with 20% off all Large-Format Banner & Roll-up Printing this month!",
         link: "/quote",
       },
-      updateAnnouncement: (announcement) => set({ announcement }),
+      updateAnnouncement: (announcement) => {
+        set({ announcement })
+        api.updateContent('announcement', 'current', announcement)
+      },
 
-      // Services Management (Default catalog loaded so the public site is never empty)
-      services: INITIAL_SERVICES,
+      // Services Catalog (Sourced from Supabase `services` table)
+      services: [],
       addService: (newService) => {
         const item = { ...newService, id: `srv-${Date.now()}`, sortOrder: get().services.length + 1 }
         set((state) => ({
@@ -44,8 +48,8 @@ export const useAppStore = create(
         api.deleteService(id)
       },
 
-      // Portfolio Management (Default projects loaded so the showcase is never empty)
-      portfolio: INITIAL_PORTFOLIO,
+      // Portfolio Showcase (Sourced from Supabase `portfolio` table)
+      portfolio: [],
       addPortfolioProject: (project) => {
         const item = { ...project, id: `proj-${Date.now()}`, date: new Date().getFullYear().toString() }
         set((state) => ({
@@ -67,7 +71,7 @@ export const useAppStore = create(
         api.deletePortfolio(id)
       },
 
-      // Orders & Enquiries Management (Clean production start: 0 fake mock records)
+      // Orders & Enquiries (Live Supabase `enquiries` table)
       enquiries: [],
       addEnquiry: (enquiry) => {
         const newEnquiry = {
@@ -113,7 +117,7 @@ export const useAppStore = create(
         api.updateEnquiry(id, { quotedPrice, agreedPrice })
       },
 
-      // Quotations (Clean production start: 0 fake mock records)
+      // Quotations (Live Supabase `quotations` table)
       quotations: [],
       addQuotation: (quote) => {
         set((state) => ({
@@ -166,13 +170,13 @@ export const useAppStore = create(
         return newQuote
       },
 
-      // Testimonials & Reviews (Default approved reviews loaded)
-      testimonials: TESTIMONIALS,
+      // Testimonials & Reviews (Live Supabase `testimonials` table)
+      testimonials: [],
       submitCustomerReview: (review) => {
         const newReview = {
           ...review,
           id: `rev-${Date.now()}`,
-          approved: false, // Pending admin approval
+          approved: false,
           featured: false,
           date: new Date().toISOString().split('T')[0],
         }
@@ -193,30 +197,40 @@ export const useAppStore = create(
         api.insertTestimonial(newReview)
         return newReview
       },
-      approveReview: (id) =>
+      approveReview: (id) => {
         set((state) => ({
           testimonials: state.testimonials.map((t) =>
             t.id === id ? { ...t, approved: true } : t
           ),
-        })),
-      rejectReview: (id) =>
+        }))
+        api.updateTestimonial(id, { approved: true })
+      },
+      rejectReview: (id) => {
         set((state) => ({
           testimonials: state.testimonials.map((t) =>
             t.id === id ? { ...t, approved: false } : t
           ),
-        })),
-      toggleFeatureReview: (id) =>
+        }))
+        api.updateTestimonial(id, { approved: false })
+      },
+      toggleFeatureReview: (id) => {
+        const current = get().testimonials.find((t) => t.id === id)
+        const nextVal = current ? !current.featured : true
         set((state) => ({
           testimonials: state.testimonials.map((t) =>
-            t.id === id ? { ...t, featured: !t.featured } : t
+            t.id === id ? { ...t, featured: nextVal } : t
           ),
-        })),
-      deleteReview: (id) =>
+        }))
+        api.updateTestimonial(id, { featured: nextVal })
+      },
+      deleteReview: (id) => {
         set((state) => ({
           testimonials: state.testimonials.filter((t) => t.id !== id),
-        })),
+        }))
+        api.deleteTestimonial(id)
+      },
 
-      // In-App Notifications (Clean start)
+      // Notifications
       notifications: [],
       markAllNotificationsAsRead: () =>
         set((state) => ({
@@ -242,26 +256,29 @@ export const useAppStore = create(
         })
       },
 
-      // Sync live production data and session from Supabase into store
+      // Initializer: Pulls all live records & session from Supabase
       syncWithSupabase: async () => {
         try {
-          const [sessionUser, services, portfolio, testimonials, enquiries, quotations] = await Promise.all([
+          const [sessionUser, services, portfolio, testimonials, enquiries, quotations, content] = await Promise.all([
             getSupabaseSessionUser(),
             api.getServices(),
             api.getPortfolio(),
             api.getTestimonials(),
             api.getEnquiries(),
             api.getQuotations(),
+            api.getContent(),
           ])
 
           set((state) => ({
-            adminUser: sessionUser ? sessionUser : state.adminUser,
+            adminUser: sessionUser || state.adminUser,
             authLoading: false,
-            services: services || state.services,
-            portfolio: portfolio || state.portfolio,
-            testimonials: testimonials || state.testimonials,
+            services: services !== null ? services : state.services,
+            portfolio: portfolio !== null ? portfolio : state.portfolio,
+            testimonials: testimonials !== null ? testimonials : state.testimonials,
             enquiries: enquiries !== null ? enquiries : state.enquiries,
             quotations: quotations !== null ? quotations : state.quotations,
+            companyInfo: content?.companyInfo || state.companyInfo,
+            announcement: content?.announcement || state.announcement,
           }))
         } catch (err) {
           console.warn('syncWithSupabase error:', err)
@@ -271,9 +288,8 @@ export const useAppStore = create(
     }),
     {
       name: "emmyt-concept-storage",
-      version: 5, // Bumped version to enforce real Supabase auth state and purge legacy fake auth
+      version: 6, // Bumped to purge any stale offline mock arrays from client's browser
       partialize: (state) => ({
-        // Do not persist fake adminUser - Supabase session cookie/token is single source of truth!
         companyInfo: state.companyInfo,
         announcement: state.announcement,
         services: state.services,
@@ -283,28 +299,17 @@ export const useAppStore = create(
         quotations: state.quotations,
         notifications: state.notifications,
       }),
-      migrate: (persistedState, version) => {
-        if (!persistedState) return persistedState
-        const mockOrderIds = new Set(['enq-101', 'enq-102', 'enq-103'])
-        const cleanedEnquiries = (persistedState.enquiries || []).filter(
-          (e) => !mockOrderIds.has(e.id)
-        )
-        const cleanedQuotations = (persistedState.quotations || []).filter(
-          (q) => q.id !== 'QT-2024-001'
-        )
-        const cleanedNotifications = (persistedState.notifications || []).filter(
-          (n) => n.id !== 'notif-1' && n.id !== 'notif-2'
-        )
+      migrate: () => {
+        // Complete clean start: all data is fetched live from Supabase tables
         return {
-          ...persistedState,
           adminUser: { isAuthenticated: false, id: null, email: null, name: null, role: null },
           authLoading: true,
-          enquiries: cleanedEnquiries,
-          quotations: cleanedQuotations,
-          notifications: cleanedNotifications,
-          services: persistedState.services?.length ? persistedState.services : INITIAL_SERVICES,
-          portfolio: persistedState.portfolio?.length ? persistedState.portfolio : INITIAL_PORTFOLIO,
-          testimonials: persistedState.testimonials?.length ? persistedState.testimonials : TESTIMONIALS,
+          services: [],
+          portfolio: [],
+          testimonials: [],
+          enquiries: [],
+          quotations: [],
+          notifications: [],
         }
       },
     }

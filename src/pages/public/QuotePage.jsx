@@ -276,7 +276,9 @@ export default function QuotePage() {
                     {...register('serviceId', { required: 'Please select a service' })}
                     className="w-full bg-[#111111] border border-white/10 focus:border-[#d9a323] rounded-lg px-3.5 py-2.5 text-sm text-white outline-none transition-colors"
                   >
-                    <option value="">Select Service...</option>
+                    <option value="">
+                      {services.length === 0 ? 'Loading services catalog...' : 'Select Service...'}
+                    </option>
                     {services.map((s) => (
                       <option key={s.id} value={s.slug || s.id}>
                         {s.name}

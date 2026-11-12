@@ -93,8 +93,16 @@ export default function PortfolioPage() {
 
       {/* Portfolio Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => {
+        {portfolio.length === 0 ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-8 h-8 border-2 border-[#d9a323] border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-mono uppercase tracking-widest text-[#8e9196]">
+              Connecting to Database Portfolio...
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProjects.map((project) => {
             const projectPhotosCount = project.images?.length || 1
 
             return (
@@ -155,6 +163,7 @@ export default function PortfolioPage() {
             )
           })}
         </div>
+        )}
       </section>
 
       {/* Modal Multi-Image Lightbox */}

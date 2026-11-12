@@ -25,6 +25,17 @@ export default function ServiceDetailPage() {
 
   const service = services.find((s) => s.slug === slug || s.id === slug)
 
+  if (services.length === 0) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 text-white">
+        <div className="w-8 h-8 border-2 border-[#d9a323] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-mono uppercase tracking-widest text-[#8e9196]">
+          Loading Service Specifications...
+        </p>
+      </div>
+    )
+  }
+
   if (!service) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-24 text-center space-y-6">

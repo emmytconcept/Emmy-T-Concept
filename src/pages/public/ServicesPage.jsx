@@ -43,7 +43,15 @@ export default function ServicesPage() {
 
       {/* Services List Detailed Cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        {services.map((service, index) => {
+        {services.length === 0 ? (
+          <div className="py-16 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-8 h-8 border-2 border-[#d9a323] border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-mono uppercase tracking-widest text-[#8e9196]">
+              Connecting to Database Catalog...
+            </p>
+          </div>
+        ) : (
+          services.map((service, index) => {
           const IconComponent = iconMap[service.icon] || Layers
           const isEven = index % 2 === 1
 
@@ -111,7 +119,7 @@ export default function ServicesPage() {
                 <div className="pt-4 flex flex-wrap items-center gap-4 border-t border-white/5">
                   <Link
                     to={`/quote?service=${service.slug}`}
-                    className="px-6 py-3 bg-gradient-to-r from-[#d9a323] to-[#b88613] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-md hover:scale-105 transition-all"
+                    className="px-6 py-3 bg-[#d9a323] hover:bg-[#e5b338] text-black text-xs font-bold uppercase tracking-wider rounded-lg shadow-md hover:scale-105 transition-all"
                   >
                     Request Quote For This Service
                   </Link>
@@ -127,7 +135,8 @@ export default function ServicesPage() {
               </div>
             </div>
           )
-        })}
+        })
+        )}
       </section>
     </div>
   )

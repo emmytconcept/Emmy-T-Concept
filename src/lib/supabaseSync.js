@@ -1,8 +1,8 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 
 /**
- * Service helpers to seamlessly read and write to Supabase when credentials exist,
- * while silently and safely falling back when offline or unconfigured.
+ * Service helpers to seamlessly read and write live data to Supabase.
+ * Connects directly to PostgreSQL tables with proper column mapping.
  */
 
 export const api = {
@@ -15,9 +15,16 @@ export const api = {
         .select('*')
         .order('sort_order', { ascending: true })
       if (error) throw error
-      return data && data.length > 0 ? data : null
+      return data && data.length > 0
+        ? data.map((s) => ({
+            ...s,
+            shortDesc: s.short_desc || s.shortDesc || '',
+            subItems: s.sub_items || s.subItems || [],
+            sortOrder: s.sort_order ?? s.sortOrder ?? 0,
+          }))
+        : []
     } catch (err) {
-      console.warn('Supabase getServices failed, using local store:', err.message)
+      console.warn('Supabase getServices failed:', err.message)
       return null
     }
   },
@@ -65,11 +72,12 @@ export const api = {
       return data && data.length > 0
         ? data.map((p) => ({
             ...p,
-            categoryLabel: p.category_label || p.categoryLabel,
+            categoryLabel: p.category_label || p.categoryLabel || p.category,
+            sortOrder: p.sort_order ?? p.sortOrder ?? 0,
           }))
-        : null
+        : []
     } catch (err) {
-      console.warn('Supabase getPortfolio failed, using local store:', err.message)
+      console.warn('Supabase getPortfolio failed:', err.message)
       return null
     }
   },
@@ -137,9 +145,9 @@ export const api = {
             notes: e.notes || '',
             createdAt: e.created_at,
           }))
-        : null
+        : []
     } catch (err) {
-      console.warn('Supabase getEnquiries failed, using local store:', err.message)
+      console.warn('Supabase getEnquiries failed:', err.message)
       return null
     }
   },
@@ -216,9 +224,9 @@ export const api = {
             validUntil: q.valid_until,
             pdfUrl: q.pdf_url,
           }))
-        : null
+        : []
     } catch (err) {
-      console.warn('Supabase getQuotations failed, using local store:', err.message)
+      console.warn('Supabase getQuotations failed:', err.message)
       return null
     }
   },
@@ -269,9 +277,9 @@ export const api = {
             featured: t.featured,
             date: t.date,
           }))
-        : null
+        : []
     } catch (err) {
-      console.warn('Supabase getTestimonials failed, using local store:', err.message)
+      console.warn('Supabase getTestimonials failed:', err.message)
       return null
     }
   },
@@ -295,17 +303,59 @@ export const api = {
     }
   },
 
+  async updateTestimonial(id, updates) {
+    if (!isSupabaseConfigured()) return
+    try {
+      const payload = {}
+      if (updates.approved !== undefined) payload.approved = updates.approved
+      if (updates.featured !== undefined) payload.featured = updates.featured
+      await supabase.from('testimonials').update(payload).eq('id', id)
+    } catch (err) {
+      console.warn('Supabase updateTestimonial error:', err.message)
+    }
+  },
+
+  async deleteTestimonial(id) {
+    if (!isSupabaseConfigured()) return
+    try {
+      await supabase.from('testimonials').delete().eq('id', id)
+    } catch (err) {
+      console.warn('Supabase deleteTestimonial error:', err.message)
+    }
+  },
+
   // 6. CONTENT & CMS
   async getContent() {
     if (!isSupabaseConfigured()) return null
     try {
       const { data, error } = await supabase.from('content').select('*')
       if (error) throw error
-      return data
+      if (!data) return null
+
+      const res = {}
+      data.forEach((row) => {
+        if (row.section === 'company_info' && row.key === 'profile') {
+          res.companyInfo = row.value
+        } else if (row.section === 'announcement' && row.key === 'current') {
+          res.announcement = row.value
+        }
+      })
+      return res
     } catch (err) {
-      console.warn('Supabase getContent failed, using local store:', err.message)
+      console.warn('Supabase getContent failed:', err.message)
       return null
     }
   },
-}
 
+  async updateContent(section, key, value) {
+    if (!isSupabaseConfigured()) return
+    try {
+      await supabase.from('content').upsert(
+        { section, key, value },
+        { onConflict: 'section,key' }
+      )
+    } catch (err) {
+      console.warn('Supabase updateContent error:', err.message)
+    }
+  },
+}
