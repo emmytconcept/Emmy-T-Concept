@@ -407,3 +407,4 @@ VALUES
   ('media-library', 'media-library', true),
   ('quotation-pdfs', 'quotation-pdfs', false)
 ON CONFLICT (id) DO NOTHING;
+
