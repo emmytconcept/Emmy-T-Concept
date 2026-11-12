@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INITIAL_SERVICES, INITIAL_PORTFOLIO, COMPANY_INFO, TESTIMONIALS } from '../lib/constants'
 import { api } from '../lib/supabaseSync'
+import { getSupabaseSessionUser, logoutSupabase } from '../lib/supabaseAuth'
 
 export const useAppStore = create(
   persist(
@@ -222,44 +223,68 @@ export const useAppStore = create(
           notifications: state.notifications.map((n) => ({ ...n, read: true })),
         })),
 
-      // Admin Auth State
+      // Admin Auth State (Real Supabase Auth)
+      authLoading: true,
       adminUser: {
-        isAuthenticated: true, // Default enabled for instant testing, can be toggled
-        email: "admin@emmytconcept.com",
-        name: "Emmy-T Director",
-        role: "super_admin",
+        isAuthenticated: false,
+        id: null,
+        email: null,
+        name: null,
+        role: null,
       },
-      setAdminAuth: (user) => set({ adminUser: user }),
-      logoutAdmin: () =>
+      setAdminAuth: (user) => set({ adminUser: user, authLoading: false }),
+      setAuthLoading: (loading) => set({ authLoading: loading }),
+      logoutAdmin: async () => {
+        await logoutSupabase()
         set({
-          adminUser: { isAuthenticated: false, email: null, name: null, role: null },
-        }),
+          adminUser: { isAuthenticated: false, id: null, email: null, name: null, role: null },
+          authLoading: false,
+        })
+      },
 
-      // Sync data from Supabase into store if available
+      // Sync live production data and session from Supabase into store
       syncWithSupabase: async () => {
-        const [services, portfolio, testimonials, enquiries, quotations] = await Promise.all([
-          api.getServices(),
-          api.getPortfolio(),
-          api.getTestimonials(),
-          api.getEnquiries(),
-          api.getQuotations(),
-        ])
+        try {
+          const [sessionUser, services, portfolio, testimonials, enquiries, quotations] = await Promise.all([
+            getSupabaseSessionUser(),
+            api.getServices(),
+            api.getPortfolio(),
+            api.getTestimonials(),
+            api.getEnquiries(),
+            api.getQuotations(),
+          ])
 
-        set((state) => ({
-          services: services || state.services,
-          portfolio: portfolio || state.portfolio,
-          testimonials: testimonials || state.testimonials,
-          enquiries: enquiries !== null ? enquiries : state.enquiries,
-          quotations: quotations !== null ? quotations : state.quotations,
-        }))
+          set((state) => ({
+            adminUser: sessionUser ? sessionUser : state.adminUser,
+            authLoading: false,
+            services: services || state.services,
+            portfolio: portfolio || state.portfolio,
+            testimonials: testimonials || state.testimonials,
+            enquiries: enquiries !== null ? enquiries : state.enquiries,
+            quotations: quotations !== null ? quotations : state.quotations,
+          }))
+        } catch (err) {
+          console.warn('syncWithSupabase error:', err)
+          set({ authLoading: false })
+        }
       },
     }),
     {
       name: "emmyt-concept-storage",
-      version: 4, // Bumped version to purge legacy mock orders from user's browser localStorage
+      version: 5, // Bumped version to enforce real Supabase auth state and purge legacy fake auth
+      partialize: (state) => ({
+        // Do not persist fake adminUser - Supabase session cookie/token is single source of truth!
+        companyInfo: state.companyInfo,
+        announcement: state.announcement,
+        services: state.services,
+        portfolio: state.portfolio,
+        testimonials: state.testimonials,
+        enquiries: state.enquiries,
+        quotations: state.quotations,
+        notifications: state.notifications,
+      }),
       migrate: (persistedState, version) => {
         if (!persistedState) return persistedState
-        // Filter out legacy hardcoded mock orders ('enq-101', 'enq-102', 'enq-103') and dummy quotes
         const mockOrderIds = new Set(['enq-101', 'enq-102', 'enq-103'])
         const cleanedEnquiries = (persistedState.enquiries || []).filter(
           (e) => !mockOrderIds.has(e.id)
@@ -272,10 +297,11 @@ export const useAppStore = create(
         )
         return {
           ...persistedState,
+          adminUser: { isAuthenticated: false, id: null, email: null, name: null, role: null },
+          authLoading: true,
           enquiries: cleanedEnquiries,
           quotations: cleanedQuotations,
           notifications: cleanedNotifications,
-          // Guarantee services & portfolio defaults are present so the site is never empty
           services: persistedState.services?.length ? persistedState.services : INITIAL_SERVICES,
           portfolio: persistedState.portfolio?.length ? persistedState.portfolio : INITIAL_PORTFOLIO,
           testimonials: persistedState.testimonials?.length ? persistedState.testimonials : TESTIMONIALS,

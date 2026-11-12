@@ -32,6 +32,8 @@ import AdminReviewsPage from './pages/admin/AdminReviewsPage'
 import AdminSettingsPage from './pages/admin/AdminSettingsPage'
 
 import { useAppStore } from './store/useAppStore'
+import { supabase } from './lib/supabase'
+import { getSupabaseSessionUser } from './lib/supabaseAuth'
 
 // Public Shell Wrapper
 function PublicLayout() {
@@ -49,7 +51,19 @@ function PublicLayout() {
 
 // Protected Route Guard for Admin
 function AdminRouteGuard({ children }) {
-  const { adminUser } = useAppStore()
+  const { adminUser, authLoading } = useAppStore()
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center gap-3 text-white">
+        <div className="w-8 h-8 border-2 border-[#d9a323] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-mono uppercase tracking-widest text-[#8e9196]">
+          Verifying Security Session...
+        </p>
+      </div>
+    )
+  }
+
   if (!adminUser?.isAuthenticated) {
     return <Navigate to="/admin/login" replace />
   }
@@ -57,11 +71,26 @@ function AdminRouteGuard({ children }) {
 }
 
 export default function App() {
-  const { syncWithSupabase } = useAppStore()
+  const { syncWithSupabase, setAdminAuth } = useAppStore()
 
   useEffect(() => {
+    // 1. Initial live data & session sync
     syncWithSupabase?.()
-  }, [syncWithSupabase])
+
+    // 2. Real-time Supabase auth state subscriber
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const user = await getSupabaseSessionUser()
+        if (user) setAdminAuth(user)
+      } else if (event === 'SIGNED_OUT') {
+        setAdminAuth({ isAuthenticated: false, id: null, email: null, name: null, role: null })
+      }
+    })
+
+    return () => {
+      subscription?.unsubscribe()
+    }
+  }, [syncWithSupabase, setAdminAuth])
 
   return (
     <BrowserRouter>

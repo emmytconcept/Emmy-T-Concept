@@ -1,37 +1,39 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Shield, Lock, Mail, ArrowRight, AlertCircle, ArrowLeft } from 'lucide-react'
+import { Lock, Mail, ArrowRight, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
+import { loginWithSupabase } from '../../lib/supabaseAuth'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('admin@emmytconcept.com')
-  const [password, setPassword] = useState('password123')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const { setAdminAuth } = useAppStore()
+  const { adminUser, setAdminAuth } = useAppStore()
   const navigate = useNavigate()
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    if (adminUser?.isAuthenticated) {
+      navigate('/admin/dashboard', { replace: true })
+    }
+  }, [adminUser, navigate])
+
+  const handleLogin = async (e) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
 
-    setTimeout(() => {
-      // Demo validation or Supabase auth
-      if (email.toLowerCase().includes('admin') || password.length >= 6) {
-        setAdminAuth({
-          isAuthenticated: true,
-          email,
-          name: 'Emmy-T Director',
-          role: 'super_admin',
-        })
-        navigate('/admin/dashboard')
-      } else {
-        setError('Invalid administrator credentials. Please check your credentials.')
-      }
+    try {
+      const user = await loginWithSupabase(email, password)
+      setAdminAuth(user)
+      navigate('/admin/dashboard')
+    } catch (err) {
+      console.error('Supabase Auth error:', err)
+      setError(err.message || 'Invalid administrator credentials. Please check your email and password.')
+    } finally {
       setIsLoading(false)
-    }, 600)
+    }
   }
 
   return (
@@ -72,6 +74,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@emmytconcept.com"
               className="w-full bg-[#111111] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder-neutral-600 outline-none focus:border-[#d9a323]"
+              autoComplete="username"
             />
           </div>
 
@@ -84,18 +87,28 @@ export default function AdminLoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
+              placeholder="Enter password..."
               className="w-full bg-[#111111] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder-neutral-600 outline-none focus:border-[#d9a323]"
+              autoComplete="current-password"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-4 bg-gradient-to-r from-[#d9a323] via-[#f7d779] to-[#b88613] text-black font-bold uppercase tracking-wider text-xs rounded-xl shadow-lg shadow-[#d9a323]/25 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+            className="w-full py-3.5 bg-[#d9a323] hover:bg-[#e5b338] disabled:opacity-60 text-black font-bold uppercase tracking-wider text-xs rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-2"
           >
-            <span>{isLoading ? 'Authenticating...' : 'Access Administration Suite'}</span>
-            <ArrowRight className="w-4 h-4" />
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Authenticating with Supabase...</span>
+              </>
+            ) : (
+              <>
+                <span>Access Administration Suite</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
 
@@ -111,4 +124,3 @@ export default function AdminLoginPage() {
     </div>
   )
 }
-

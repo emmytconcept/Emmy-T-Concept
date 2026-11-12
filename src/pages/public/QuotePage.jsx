@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { WhatsAppIcon } from '../../components/shared/SocialIcons'
 import { useAppStore } from '../../store/useAppStore'
+import { uploadToSupabaseStorage } from '../../lib/supabaseStorage'
 
 export default function QuotePage() {
   const [searchParams] = useSearchParams()
@@ -61,9 +62,13 @@ export default function QuotePage() {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
 
-    files.forEach((file) => {
+    files.forEach(async (file) => {
       const isImage = file.type.startsWith('image/')
       const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+      const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
+
+      // Upload to Supabase Storage in the background
+      const cloudUrl = await uploadToSupabaseStorage('customer-uploads', file, 'quotes')
 
       if (isImage) {
         const reader = new FileReader()
@@ -71,10 +76,11 @@ export default function QuotePage() {
           setUploadedFiles((prev) => [
             ...prev,
             {
-              id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+              id: fileId,
               name: file.name,
               size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
               type: file.type,
+              url: cloudUrl || event.target.result,
               isImage: true,
               isPdf: false,
               previewUrl: event.target.result,
@@ -86,10 +92,11 @@ export default function QuotePage() {
         setUploadedFiles((prev) => [
           ...prev,
           {
-            id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+            id: fileId,
             name: file.name,
             size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
             type: file.type,
+            url: cloudUrl || null,
             isImage: false,
             isPdf,
             previewUrl: null,

@@ -28,9 +28,9 @@ export default function AdminLayout({ children }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
-  const handleLogout = () => {
-    logoutAdmin()
-    navigate('/')
+  const handleLogout = async () => {
+    await logoutAdmin()
+    navigate('/admin/login')
   }
 
   const navItems = [
