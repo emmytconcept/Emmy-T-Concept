@@ -757,6 +757,15 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
                 className="relative flex flex-col bg-[#0f0f0f] rounded-xl p-7 group transition-colors duration-300 hover:bg-[#111111]"
               >
+                {/* Corner bracket — top-left */}
+                <span className="pointer-events-none absolute top-0 left-0 w-5 h-5 border-t border-l border-[#d9a323]/50 rounded-tl-xl" />
+                {/* Corner bracket — top-right */}
+                <span className="pointer-events-none absolute top-0 right-0 w-5 h-5 border-t border-r border-[#d9a323]/50 rounded-tr-xl" />
+                {/* Corner bracket — bottom-left */}
+                <span className="pointer-events-none absolute bottom-0 left-0 w-5 h-5 border-b border-l border-[#d9a323]/50 rounded-bl-xl" />
+                {/* Corner bracket — bottom-right */}
+                <span className="pointer-events-none absolute bottom-0 right-0 w-5 h-5 border-b border-r border-[#d9a323]/50 rounded-br-xl" />
+
                 {/* Large gold quotation mark — hero design element */}
                 <span
                   aria-hidden="true"
