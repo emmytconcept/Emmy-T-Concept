@@ -755,41 +755,35 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="relative flex flex-col justify-between bg-[#0a0a0a] rounded-2xl p-8 group
-                           border border-white/5
-                           border-l-2 border-l-[#d9a323]
-                           hover:border-l-[#e5b338] hover:bg-[#0d0d0d]
-                           transition-all duration-300 overflow-hidden"
+                className="relative flex flex-col bg-[#0f0f0f] rounded-xl p-7 group transition-colors duration-300 hover:bg-[#111111]"
               >
-                {/* Top-right corner accent bar */}
-                <span className="absolute top-0 right-0 w-10 h-[2px] bg-[#d9a323] rounded-bl-sm opacity-60 group-hover:opacity-100 group-hover:w-16 transition-all duration-300" />
-                {/* Bottom-left corner accent bar */}
-                <span className="absolute bottom-0 left-0 w-10 h-[2px] bg-[#d9a323]/40 rounded-tr-sm opacity-0 group-hover:opacity-60 transition-all duration-300" />
-
-                {/* Oversized decorative quote mark */}
-                <span className="absolute top-4 right-6 font-serif text-7xl leading-none text-[#d9a323]/10 select-none pointer-events-none group-hover:text-[#d9a323]/18 transition-colors duration-300">
+                {/* Large gold quotation mark — hero design element */}
+                <span
+                  aria-hidden="true"
+                  className="block font-serif text-[96px] leading-none text-[#d9a323] select-none mb-1 -mt-3"
+                  style={{ fontFamily: 'Georgia, serif', lineHeight: 1 }}
+                >
                   &ldquo;
                 </span>
 
-                <div className="space-y-5 relative z-10">
-                  {/* Star Rating */}
+                {/* Quote body */}
+                <p className="text-sm text-[#c6c8cc] leading-relaxed flex-1">
+                  {t.content}
+                </p>
+
+                {/* Stars + Attribution */}
+                <div className="mt-7 space-y-3">
                   <div className="flex items-center gap-0.5">
                     {[...Array(t.rating || 5)].map((_, i) => (
                       <Star key={i} className="w-3.5 h-3.5 fill-[#d9a323] text-[#d9a323]" />
                     ))}
                   </div>
-
-                  <p className="text-sm text-[#c6c8cc] leading-relaxed">
-                    {t.content}
-                  </p>
-                </div>
-
-                {/* Attribution — no divider, just spacing + left-accent feel */}
-                <div className="mt-8 relative z-10 pl-3 border-l border-[#d9a323]/30">
-                  <p className="font-heading font-bold text-sm text-white tracking-wide">{t.name}</p>
-                  <p className="text-[11px] text-[#8e9196] mt-0.5">
-                    {t.role}{t.company ? <>, <span className="text-[#d9a323] font-medium">{t.company}</span></> : ''}
-                  </p>
+                  <div>
+                    <p className="font-heading font-bold text-sm text-white tracking-wide">{t.name}</p>
+                    <p className="text-[11px] text-[#8e9196] mt-0.5">
+                      {t.role}{t.company ? <>, <span className="text-[#d9a323]">{t.company}</span></> : ''}
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             ))}
