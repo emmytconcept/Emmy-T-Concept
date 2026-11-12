@@ -51,9 +51,14 @@ export const api = {
     }
   },
 
-  async deleteService(id) {
+  async deleteService(id, imageUrl) {
     if (!isSupabaseConfigured()) return
     try {
+      // Delete storage file first (best-effort, non-blocking)
+      if (imageUrl) {
+        const { deleteFromSupabaseStorage } = await import('./supabaseStorage')
+        await deleteFromSupabaseStorage(imageUrl)
+      }
       await supabase.from('services').delete().eq('id', id)
     } catch (err) {
       console.warn('Supabase deleteService error:', err.message)
@@ -105,9 +110,14 @@ export const api = {
     }
   },
 
-  async deletePortfolio(id) {
+  async deletePortfolio(id, imageUrls = []) {
     if (!isSupabaseConfigured()) return
     try {
+      // Delete all associated storage files (cover + gallery) first
+      if (imageUrls.length) {
+        const { deleteFilesFromStorage } = await import('./supabaseStorage')
+        await deleteFilesFromStorage(imageUrls)
+      }
       await supabase.from('portfolio').delete().eq('id', id)
     } catch (err) {
       console.warn('Supabase deletePortfolio error:', err.message)

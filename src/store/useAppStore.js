@@ -57,10 +57,11 @@ export const useAppStore = create(
         if (updated) api.upsertService(updated)
       },
       deleteService: (id) => {
+        const svc = get().services.find((s) => s.id === id)
         set((state) => ({
           services: state.services.filter((s) => s.id !== id),
         }))
-        api.deleteService(id)
+        api.deleteService(id, svc?.image)
       },
 
       // Portfolio Showcase (Sourced from Supabase `portfolio` table)
@@ -80,10 +81,16 @@ export const useAppStore = create(
         if (updated) api.upsertPortfolio(updated)
       },
       deletePortfolioProject: (id) => {
+        const proj = get().portfolio.find((p) => p.id === id)
         set((state) => ({
           portfolio: state.portfolio.filter((p) => p.id !== id),
         }))
-        api.deletePortfolio(id)
+        // Collect all image URLs: cover + full gallery (deduplicated)
+        const allUrls = [...new Set([
+          ...(proj?.image ? [proj.image] : []),
+          ...(Array.isArray(proj?.images) ? proj.images : []),
+        ])]
+        api.deletePortfolio(id, allUrls)
       },
 
       // Portfolio Categories (Managed dynamically in Supabase `content` table)
