@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INITIAL_SERVICES, INITIAL_PORTFOLIO, COMPANY_INFO, TESTIMONIALS } from '../lib/constants'
+import { api } from '../lib/supabaseSync'
 
 export const useAppStore = create(
   persist(
@@ -19,96 +20,54 @@ export const useAppStore = create(
       },
       updateAnnouncement: (announcement) => set({ announcement }),
 
-      // Services Management
+      // Services Management (Default catalog loaded so the public site is never empty)
       services: INITIAL_SERVICES,
-      addService: (newService) =>
+      addService: (newService) => {
+        const item = { ...newService, id: `srv-${Date.now()}`, sortOrder: get().services.length + 1 }
         set((state) => ({
-          services: [
-            ...state.services,
-            { ...newService, id: `srv-${Date.now()}`, sortOrder: state.services.length + 1 },
-          ],
-        })),
-      updateService: (id, updates) =>
+          services: [...state.services, item],
+        }))
+        api.upsertService(item)
+      },
+      updateService: (id, updates) => {
         set((state) => ({
           services: state.services.map((s) => (s.id === id ? { ...s, ...updates } : s)),
-        })),
-      deleteService: (id) =>
+        }))
+        const updated = get().services.find((s) => s.id === id)
+        if (updated) api.upsertService(updated)
+      },
+      deleteService: (id) => {
         set((state) => ({
           services: state.services.filter((s) => s.id !== id),
-        })),
+        }))
+        api.deleteService(id)
+      },
 
-      // Portfolio Management
+      // Portfolio Management (Default projects loaded so the showcase is never empty)
       portfolio: INITIAL_PORTFOLIO,
-      addPortfolioProject: (project) =>
+      addPortfolioProject: (project) => {
+        const item = { ...project, id: `proj-${Date.now()}`, date: new Date().getFullYear().toString() }
         set((state) => ({
-          portfolio: [
-            { ...project, id: `proj-${Date.now()}`, date: new Date().getFullYear().toString() },
-            ...state.portfolio,
-          ],
-        })),
-      updatePortfolioProject: (id, updates) =>
+          portfolio: [item, ...state.portfolio],
+        }))
+        api.upsertPortfolio(item)
+      },
+      updatePortfolioProject: (id, updates) => {
         set((state) => ({
           portfolio: state.portfolio.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-        })),
-      deletePortfolioProject: (id) =>
+        }))
+        const updated = get().portfolio.find((p) => p.id === id)
+        if (updated) api.upsertPortfolio(updated)
+      },
+      deletePortfolioProject: (id) => {
         set((state) => ({
           portfolio: state.portfolio.filter((p) => p.id !== id),
-        })),
+        }))
+        api.deletePortfolio(id)
+      },
 
-      // Orders & Enquiries Management
-      enquiries: [
-        {
-          id: "enq-101",
-          customerName: "Chief Adewale Johnson",
-          phone: "+234 803 111 2233",
-          email: "adewale.j@horizoncorp.ng",
-          serviceId: "banner-printing",
-          serviceName: "Digital & Large-Format Printing",
-          description: "Need 4 units of 8ft x 4ft roll-up banners and 1 large outdoor stage backdrop for an upcoming corporate summit.",
-          quantity: "5 items",
-          dimensions: "8x4ft & 20x10ft",
-          deliveryDate: "2024-11-20",
-          status: "in_production",
-          quotedPrice: 185000,
-          agreedPrice: 180000,
-          createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-          notes: "Approved mockups sent via WhatsApp. Client confirmed 50% deposit.",
-        },
-        {
-          id: "enq-102",
-          customerName: "Blessing Okafor",
-          phone: "+234 812 445 6677",
-          email: "blessing@blisscosmetics.com",
-          serviceId: "packaging-branding",
-          serviceName: "Product & Packaging Branding",
-          description: "1,000 units of custom matte black paper shopping bags with embossed gold foil logo for luxury cosmetics.",
-          quantity: "1,000 bags",
-          dimensions: "Medium (A4 size)",
-          deliveryDate: "2024-11-28",
-          status: "quotation_sent",
-          quotedPrice: 320000,
-          agreedPrice: null,
-          createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
-          notes: "Sample paper board shown. Awaiting client confirmation.",
-        },
-        {
-          id: "enq-103",
-          customerName: "Engr. Femi Alabi",
-          phone: "+234 905 889 9001",
-          email: "femi@alabiconstruct.com",
-          serviceId: "business-printing",
-          serviceName: "Business & Corporate Printing",
-          description: "5 packs of luxury executive business cards (Double-sided, 600gsm cotton card with gold gilded edges).",
-          quantity: "500 cards",
-          dimensions: "Standard 3.5 x 2.0 in",
-          deliveryDate: "2024-11-18",
-          status: "new_enquiry",
-          quotedPrice: 65000,
-          agreedPrice: null,
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-          notes: "",
-        }
-      ],
+      // Orders & Enquiries Management (Clean production start: 0 fake mock records)
+      enquiries: [],
       addEnquiry: (enquiry) => {
         const newEnquiry = {
           ...enquiry,
@@ -124,8 +83,8 @@ export const useAppStore = create(
           notifications: [
             {
               id: `notif-${Date.now()}`,
-              title: "New Project Enquiry",
-              message: `${enquiry.customerName} requested quote for ${enquiry.serviceName || 'a service'}`,
+              title: enquiry.type === 'contact_message' ? "New Direct Message" : "New Project Enquiry",
+              message: `${enquiry.customerName} submitted ${enquiry.serviceName || 'a request'}`,
               timestamp: new Date().toISOString(),
               read: false,
               link: "/admin/orders",
@@ -133,46 +92,34 @@ export const useAppStore = create(
             ...state.notifications,
           ],
         }))
+        api.insertEnquiry(newEnquiry)
         return newEnquiry
       },
-      updateEnquiryStatus: (id, status, notes = null) =>
+      updateEnquiryStatus: (id, status, notes = null) => {
         set((state) => ({
           enquiries: state.enquiries.map((e) =>
             e.id === id ? { ...e, status, ...(notes !== null ? { notes } : {}) } : e
           ),
-        })),
-      updateEnquiryPricing: (id, quotedPrice, agreedPrice) =>
+        }))
+        api.updateEnquiry(id, { status, ...(notes !== null ? { notes } : {}) })
+      },
+      updateEnquiryPricing: (id, quotedPrice, agreedPrice) => {
         set((state) => ({
           enquiries: state.enquiries.map((e) =>
             e.id === id ? { ...e, quotedPrice, agreedPrice } : e
           ),
-        })),
+        }))
+        api.updateEnquiry(id, { quotedPrice, agreedPrice })
+      },
 
-      // Quotations
-      quotations: [
-        {
-          id: "QT-2024-001",
-          enquiryId: "enq-101",
-          customerName: "Chief Adewale Johnson",
-          customerPhone: "+234 803 111 2233",
-          customerEmail: "adewale.j@horizoncorp.ng",
-          date: "2024-11-08",
-          validUntil: "2024-11-22",
-          items: [
-            { description: "Roll-up Banners (Heavy Base aluminum cassette, 8x4ft)", qty: 4, unitPrice: 25000, total: 100000 },
-            { description: "Outdoor Stage Backdrop Flex Banner (20x10ft) with eyelets", qty: 1, unitPrice: 75000, total: 75000 },
-            { description: "Delivery & Setup at Summit Venue", qty: 1, unitPrice: 10000, total: 10000 },
-          ],
-          subtotal: 185000,
-          discount: 5000,
-          total: 180000,
-          status: "accepted",
-        }
-      ],
-      addQuotation: (quote) =>
+      // Quotations (Clean production start: 0 fake mock records)
+      quotations: [],
+      addQuotation: (quote) => {
         set((state) => ({
           quotations: [quote, ...state.quotations],
-        })),
+        }))
+        api.insertQuotation(quote)
+      },
       createQuotationFromEnquiry: (enquiryId, quoteData) => {
         const newQuote = {
           ...quoteData,
@@ -209,16 +156,22 @@ export const useAppStore = create(
             ...state.notifications,
           ],
         }))
+        api.insertQuotation(newQuote)
+        api.updateEnquiry(enquiryId, {
+          status: 'quotation_sent',
+          quotedPrice: newQuote.total,
+          quoteId: newQuote.id,
+        })
         return newQuote
       },
 
-      // Testimonials & Reviews
+      // Testimonials & Reviews (Default approved reviews loaded)
       testimonials: TESTIMONIALS,
       submitCustomerReview: (review) => {
         const newReview = {
           ...review,
           id: `rev-${Date.now()}`,
-          approved: false, // Pending admin review!
+          approved: false, // Pending admin approval
           featured: false,
           date: new Date().toISOString().split('T')[0],
         }
@@ -236,6 +189,7 @@ export const useAppStore = create(
             ...state.notifications,
           ],
         }))
+        api.insertTestimonial(newReview)
         return newReview
       },
       approveReview: (id) =>
@@ -261,25 +215,8 @@ export const useAppStore = create(
           testimonials: state.testimonials.filter((t) => t.id !== id),
         })),
 
-      // In-App Notifications
-      notifications: [
-        {
-          id: "notif-1",
-          title: "New Enquiry Received",
-          message: "Engr. Femi Alabi requested quote for Luxury Business Cards",
-          timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-          read: false,
-          link: "/admin/orders",
-        },
-        {
-          id: "notif-2",
-          title: "Quotation Accepted",
-          message: "Chief Adewale Johnson accepted Quotation QT-2024-001 (₦180,000)",
-          timestamp: new Date(Date.now() - 3600000 * 20).toISOString(),
-          read: true,
-          link: "/admin/orders",
-        }
-      ],
+      // In-App Notifications (Clean start)
+      notifications: [],
       markAllNotificationsAsRead: () =>
         set((state) => ({
           notifications: state.notifications.map((n) => ({ ...n, read: true })),
@@ -297,10 +234,53 @@ export const useAppStore = create(
         set({
           adminUser: { isAuthenticated: false, email: null, name: null, role: null },
         }),
+
+      // Sync data from Supabase into store if available
+      syncWithSupabase: async () => {
+        const [services, portfolio, testimonials, enquiries, quotations] = await Promise.all([
+          api.getServices(),
+          api.getPortfolio(),
+          api.getTestimonials(),
+          api.getEnquiries(),
+          api.getQuotations(),
+        ])
+
+        set((state) => ({
+          services: services || state.services,
+          portfolio: portfolio || state.portfolio,
+          testimonials: testimonials || state.testimonials,
+          enquiries: enquiries !== null ? enquiries : state.enquiries,
+          quotations: quotations !== null ? quotations : state.quotations,
+        }))
+      },
     }),
     {
       name: "emmyt-concept-storage",
+      version: 4, // Bumped version to purge legacy mock orders from user's browser localStorage
+      migrate: (persistedState, version) => {
+        if (!persistedState) return persistedState
+        // Filter out legacy hardcoded mock orders ('enq-101', 'enq-102', 'enq-103') and dummy quotes
+        const mockOrderIds = new Set(['enq-101', 'enq-102', 'enq-103'])
+        const cleanedEnquiries = (persistedState.enquiries || []).filter(
+          (e) => !mockOrderIds.has(e.id)
+        )
+        const cleanedQuotations = (persistedState.quotations || []).filter(
+          (q) => q.id !== 'QT-2024-001'
+        )
+        const cleanedNotifications = (persistedState.notifications || []).filter(
+          (n) => n.id !== 'notif-1' && n.id !== 'notif-2'
+        )
+        return {
+          ...persistedState,
+          enquiries: cleanedEnquiries,
+          quotations: cleanedQuotations,
+          notifications: cleanedNotifications,
+          // Guarantee services & portfolio defaults are present so the site is never empty
+          services: persistedState.services?.length ? persistedState.services : INITIAL_SERVICES,
+          portfolio: persistedState.portfolio?.length ? persistedState.portfolio : INITIAL_PORTFOLIO,
+          testimonials: persistedState.testimonials?.length ? persistedState.testimonials : TESTIMONIALS,
+        }
+      },
     }
   )
 )
-

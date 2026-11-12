@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 
@@ -57,6 +57,12 @@ function AdminRouteGuard({ children }) {
 }
 
 export default function App() {
+  const { syncWithSupabase } = useAppStore()
+
+  useEffect(() => {
+    syncWithSupabase?.()
+  }, [syncWithSupabase])
+
   return (
     <BrowserRouter>
       <ScrollToTop />
