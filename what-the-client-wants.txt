@@ -1,0 +1,531 @@
+EMMY-T CONCEPT – PREMIUM CORPORATE WEBSITE DEVELOPMENT BRIEF
+
+1. Project Overview
+
+I want to develop a premium, modern, high-end corporate website for EMMY-T CONCEPT, a professional Graphic Design, Digital Printing, Advertising and Branding company.
+
+The website should establish EMMY-T CONCEPT as a credible, reputable and professional brand with a strong online presence.
+
+I want a complete website with a visually impressive frontend and a fully functional backend administration system.
+
+This should not look like an ordinary small-business website. I want the quality, structure, appearance and functionality of an established professional company website.
+
+2. Brand Identity and Visual Direction
+
+The website must follow the exact colour identity of my official logo.
+
+Brand colours:
+
+* Luxury Black
+* Metallic Gold
+* Premium Silver
+* White for clean contrast and readability.
+
+Use my supplied EMMY-T CONCEPT logo as the official brand logo. Do not redesign or alter it.
+
+The overall appearance should be:
+
+* Premium and luxurious.
+* Modern and corporate.
+* Elegant and visually attractive.
+* Clean, organised and easy to navigate.
+* Professional typography and excellent spacing.
+* Smooth animations and transitions.
+* High-quality images and presentation.
+
+Avoid overcrowded layouts, cheap-looking templates and excessive animations.
+
+3. Website Frontend – What Visitors Should See
+
+A. Homepage
+
+Create a powerful homepage featuring:
+
+* Professional navigation menu.
+* Prominent company logo.
+* Attractive hero section with a strong headline.
+* Brief company introduction.
+* Explore Our Services button.
+* Request a Quote button.
+* Featured services.
+* Selected portfolio projects.
+* Why Choose Us section.
+* Customer testimonials.
+* Strong contact section.
+* Professional footer.
+
+B. About Us
+
+Include:
+
+* Company introduction.
+* Our story.
+* Vision and mission.
+* Core values.
+* Commitment to quality and customer satisfaction.
+
+C. Our Services
+
+Create individual service sections or pages for:
+
+1. Graphic Design.
+2. Banner, Sticker & Label Printing.
+3. Flyer Printing.
+4. Business Card Printing.
+5. Product & Packaging Branding.
+6. Clothing & Fabric Printing.
+
+Each service should have a professional description, relevant images and a button to request a quotation.
+
+D. Portfolio / Our Projects
+
+Create an attractive portfolio gallery where visitors can view our completed works.
+
+Include categories such as:
+
+* Graphic Designs.
+* Banner Designs.
+* Flyer Designs.
+* Business Branding.
+* Packaging Designs.
+* Clothing and Fabric Printing.
+* Other Printing Projects.
+
+Allow visitors to view individual projects in larger detail.
+
+E. Request a Quote
+
+Customers should be able to submit project enquiries through a professional form.
+
+The form should collect:
+
+* Customer’s name.
+* Phone number.
+* Email address.
+* Service required.
+* Project description.
+* Required quantity and dimensions, where applicable.
+* Upload design or reference files.
+* Preferred delivery date.
+
+After submission, the enquiry should be saved in the backend for management.
+
+F. Contact Us
+
+Include:
+
+* WhatsApp contact button.
+* Phone number.
+* Business email.
+* Social media links.
+* Business location, when provided.
+* Contact form.
+
+4. Backend – Admin Dashboard
+
+This is a very important part of the project.
+
+I want a secure and fully functional backend dashboard that only authorised administrators can access.
+
+The dashboard should allow me to manage the website without needing a developer every time I want to make changes.
+
+Admin Dashboard Features
+
+1. Dashboard Overview
+
+* Total enquiries.
+* New orders.
+* Pending quotations.
+* Completed projects.
+* Recent customer activities.
+
+2. Service Management
+
+* Add new services.
+* Edit existing services.
+* Delete services.
+* Update service descriptions and images.
+
+3. Portfolio Management
+
+* Upload new project images.
+* Add project titles and descriptions.
+* Organise projects into categories.
+* Edit or remove portfolio projects.
+
+4. Order and Enquiry Management
+
+* View customer enquiries.
+* View uploaded reference files.
+* Update enquiry status.
+* Manage customer requests.
+* Track orders from pending to completed.
+* Record quotations and agreed prices.
+
+5. Website Content Management
+
+* Edit homepage content.
+* Update company information.
+* Change promotional banners.
+* Update contact details.
+* Manage testimonials and announcements.
+
+6. Customer Management
+
+* View customer details.
+* Access enquiry history.
+* Keep track of customer requests.
+
+7. Admin Account and Security
+
+* Secure administrator login.
+* Password protection.
+* Password reset functionality.
+* Role-based access for additional staff.
+* Secure logout and session management.
+
+5. Technical Requirements
+
+I want the website to have:
+
+* A proper frontend and backend architecture.
+* A reliable database.
+* Secure authentication and authorisation.
+* Responsive design for mobile, tablet and desktop.
+* Fast loading speed and optimised images.
+* Search engine optimisation (SEO).
+* SSL/HTTPS security.
+* Automated backups.
+* Error handling and form validation.
+* A scalable structure for future expansion.
+
+The website should also support WhatsApp integration so customers can easily contact the company.
+
+6. Website Navigation
+
+The main navigation should include:
+
+HOME | ABOUT US | SERVICES | PORTFOLIO | REQUEST A QUOTE | CONTACT
+
+The Admin Dashboard should be separate from the public website and protected by administrator authentication.
+
+7. Final Expectations
+
+I want a complete, production-ready corporate website, not just a frontend design or static landing page.
+
+The frontend must impress visitors, communicate professionalism and convert visitors into customers.
+
+The backend must give me full control over website content, services, portfolio, customer enquiries and order management.
+
+The website should be built with quality, security, scalability and long-term business growth in mind.
+
+Brand Name: EMMY-T CONCEPT
+
+Brand Identity: Luxury Black, Metallic Gold and Silver.
+
+Brand Positioning: Professional Creative Design, Digital Printing, Advertising and Branding Solutions.
+
+Brand Personality: Premium, Creative, Innovative, Reliable and Professional.
+
+Overall Goal: To establish EMMY-T CONCEPT as a strong, reputable and recognised creative company with a premium digital presence.
+
+
+
+
+EMMY-T CONCEPT – Our Services
+1. Graphic Design
+Flyer Design
+Logo Design
+Business Card Design
+Poster Design
+Brochure Design
+Banner Design
+2. Digital & Large-Format Printing
+Banner Printing
+Flyer Printing
+Poster Printing
+Sticker & Label Printing
+3. Business & Corporate Printing
+Business Card Printing
+Corporate Materials Printing
+Promotional Materials Printing
+4. Clothing & Fabric Printing
+T-shirt Printing
+Custom Clothing Printing
+Fabric & Material Printing
+5. Product & Packaging Branding
+Branded Nylon Bags
+Paper Bags
+Carton & Box Branding
+Food Packaging Printing
+Product Labels & Stickers
+Custom Packaging Materials
+6. Advertising & Promotional Materials
+Advertising Banners
+Promotional Flyers
+Marketing Materials
+Custom Branded Materials
+
+
+EMMY-T CONCEPT – COMPLETE WEBSITE & ADMINISTRATOR FUNCTIONALITY
+
+1. ADMIN DASHBOARD
+
+Create a powerful, modern and easy-to-use admin dashboard where I can manage the entire website and monitor business activities.
+
+The dashboard should display:
+
+* Total website visitors.
+* Total customer enquiries.
+* New orders.
+* Pending orders.
+* Completed orders.
+* Pending quotations.
+* Recent customer activities.
+* Recent website updates.
+
+Include a clean analytics section with charts and statistics to help me monitor business performance.
+
+2. PORTFOLIO & PROJECT MANAGEMENT
+
+This is one of the most important features.
+
+As the administrator, I want to be able to:
+
+* Upload pictures of newly completed projects.
+* Upload multiple pictures at once.
+* Upload project videos where supported.
+* Add project titles and descriptions.
+* Select project categories.
+* Add completion dates.
+* Edit or replace uploaded pictures.
+* Delete projects.
+* Feature selected projects on the homepage.
+* Rearrange the order in which projects appear.
+* Publish projects immediately or save them as drafts.
+
+Whenever I upload a new project and publish it, it should automatically appear in the appropriate portfolio section on the public website.
+
+Include categories such as Graphic Design, Banner Printing, Flyer Printing, Business Branding, Packaging, Clothing Printing and other projects.
+
+3. SERVICES MANAGEMENT
+
+I want complete control over the services displayed on the website.
+
+I should be able to:
+
+* Add new services.
+* Edit service names and descriptions.
+* Upload service images.
+* Add service categories.
+* Remove discontinued services.
+* Rearrange service listings.
+* Mark selected services as featured.
+* Add or update service information without contacting a developer.
+
+New services should automatically appear on the public website once published.
+
+4. CUSTOMER ORDERS & ENQUIRIES
+
+Create a proper order and enquiry management system.
+
+Customers should be able to submit orders and project enquiries through the website.
+
+The system should allow me to:
+
+* View all customer enquiries.
+* View customer contact information.
+* View project descriptions and requirements.
+* Download customer-uploaded designs and reference files.
+* Record quotations and agreed prices.
+* Update order status.
+* Add private administrative notes to orders.
+* Search and filter orders.
+* View previous customer orders.
+
+Order statuses should include:
+
+* New Enquiry.
+* Awaiting Quotation.
+* Quotation Sent.
+* Awaiting Payment.
+* In Production.
+* Ready for Collection.
+* Dispatched.
+* Completed.
+* Cancelled.
+
+5. CUSTOMER MANAGEMENT
+
+Create a customer management section where I can:
+
+* View registered customers where customer accounts are enabled.
+* View customer contact details.
+* View their enquiry and order history.
+* Identify returning customers.
+* Add internal customer notes.
+* Search for customers by name, email or phone number.
+
+6. WEBSITE CONTENT MANAGEMENT
+
+I want to be able to update the website myself.
+
+The admin dashboard should allow me to:
+
+* Change homepage headlines and descriptions.
+* Update the About Us section.
+* Edit company information.
+* Change banners and promotional images.
+* Add announcements.
+* Update contact details.
+* Manage testimonials.
+* Update social media links.
+* Edit website text and images.
+
+All published changes should reflect on the public website without requiring manual coding.
+
+7. PROMOTIONS & SPECIAL OFFERS
+
+Create a section where I can:
+
+* Create promotional campaigns.
+* Upload promotional banners.
+* Add special offers.
+* Set promotion start and end dates.
+* Publish announcements.
+* Feature selected promotions on the homepage.
+
+Expired promotions should automatically stop displaying.
+
+8. QUOTATION MANAGEMENT
+
+Create a quotation system where I can:
+
+* Prepare quotations for customers.
+* Add requested services.
+* Specify quantities and dimensions.
+* Enter prices.
+* Add delivery or production charges.
+* Calculate totals.
+* Generate professional quotation documents in PDF.
+* Send quotations to customers through email or WhatsApp.
+
+Allow customers to accept or decline quotations.
+
+9. REVIEWS & TESTIMONIALS
+
+I want to manage customer feedback.
+
+Features should include:
+
+* Add customer testimonials.
+* Upload customer feedback images where authorised.
+* Approve or reject submitted reviews.
+* Feature selected testimonials on the homepage.
+* Remove inappropriate or irrelevant reviews.
+
+10. NOTIFICATIONS
+
+The system should notify me when:
+
+* A customer submits a new enquiry.
+* A customer uploads a design.
+* A new order is placed.
+* A customer requests a quotation.
+* A customer accepts a quotation.
+* A customer submits a review.
+
+Notifications should be available inside the admin dashboard, with optional email notifications.
+
+11. WEBSITE ANALYTICS & REPORTS
+
+Include an analytics section showing:
+
+* Number of website visitors.
+* Most visited pages.
+* Most viewed services.
+* Most popular portfolio projects.
+* Number of enquiries received.
+* Enquiry conversion statistics.
+* Customer order statistics.
+
+Allow me to view reports by date range and export useful business reports.
+
+12. ADMINISTRATOR & STAFF MANAGEMENT
+
+The website should support multiple authorised users.
+
+I want:
+
+* A secure administrator login.
+* Ability to create additional staff accounts.
+* Different access permissions.
+* A super administrator account with full control.
+* Staff accounts with restricted permissions.
+* Activity logs showing important administrative actions.
+* Secure password reset.
+* Two-factor authentication where supported.
+
+13. MEDIA LIBRARY
+
+Create a central media library where I can manage:
+
+* Logos.
+* Project pictures.
+* Service images.
+* Promotional banners.
+* Videos.
+* Downloadable documents.
+
+Include image previews, search, categories and file organisation.
+
+Automatically optimise uploaded images for fast website loading while preserving good visual quality.
+
+14. WEBSITE SECURITY & BACKUPS
+
+The website must include:
+
+* Secure administrator authentication.
+* Protection against unauthorised access.
+* Secure file uploads.
+* Input validation and spam protection.
+* HTTPS security.
+* Regular database backups.
+* Recovery options.
+* Error monitoring.
+* Secure handling of customer information.
+
+15. FUTURE EXPANSION
+
+Build the website so that additional features can be introduced without rebuilding the entire platform.
+
+Future features should include:
+
+* Customer accounts.
+* Online payments.
+* Customer order tracking.
+* Automated invoices and receipts.
+* Online store functionality.
+* Product catalogues.
+* Live chat.
+* Delivery and dispatch management.
+
+FINAL REQUIREMENT
+
+I want a fully functional, dynamic website connected to a properly structured backend database.
+
+The administrator should have complete control over the website’s content, portfolio, services, enquiries, quotations, customers, promotions and other business activities.
+
+Whenever I upload a new project, add a service, update a picture or publish an announcement, the changes should automatically reflect on the public website.
+
+I want a system that is easy to operate, secure, reliable, scalable and professionally developed.
+
+The objective is to make EMMY-T CONCEPT a complete digital business platform, not just a company website.
+
+In short 
+EMMY-T CONCEPT specialises in Graphic Design, Digital Printing, Business & Corporate Printing, Clothing & Fabric Printing, Product & Packaging Branding, and Advertising & Promotional Solutions.
+
+brand-color
+#080808
+#d9a323
+#c6c8cc

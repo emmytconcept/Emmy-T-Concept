@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-black: #080808;
+  --color-brand-gold: #d9a323;
+  --color-brand-gold-light: #f5d061;
+  --color-brand-gold-dark: #b58210;
+  --color-brand-silver: #c6c8cc;
+  --color-brand-silver-light: #e5e7eb;
+  --color-brand-silver-dark: #8e9196;
+  --color-brand-dark: #121212;
+  --color-brand-card: #181818;
+  --color-brand-border: rgba(217, 163, 35, 0.2);
+
+  --font-heading: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.font-heading {
+  font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+}
+
+body {
+  background-color: #080808;
+  color: #f1f5f9;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #080808;
+}
+::-webkit-scrollbar-thumb {
+  background: #232018;
+  border-radius: 4px;
+  border: 1px solid rgba(217, 163, 35, 0.25);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d9a323;
+}
+
+/* Luxury Metallic Text Gradients */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #d9a323 0%, #fae18c 50%, #b88613 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-silver-gradient {
+  background: linear-gradient(135deg, #c6c8cc 0%, #ffffff 50%, #8e9196 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glassmorphism Dark Surfaces */
+.glass-panel {
+  background: rgba(18, 18, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(217, 163, 35, 0.18);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-panel-hover:hover {
+  border-color: rgba(217, 163, 35, 0.5);
+  box-shadow: 0 12px 35px -10px rgba(217, 163, 35, 0.2);
+  transform: translateY(-4px);
+}
