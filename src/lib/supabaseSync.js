@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { deleteFromSupabaseStorage, deleteFilesFromStorage } from './supabaseStorage'
 
 /**
  * Service helpers to seamlessly read and write live data to Supabase.
@@ -56,10 +57,8 @@ export const api = {
     try {
       // Delete storage file first (best-effort, non-blocking)
       if (imageUrl) {
-        const { deleteFromSupabaseStorage } = await import('./supabaseStorage')
         await deleteFromSupabaseStorage(imageUrl)
-      }
-      await supabase.from('services').delete().eq('id', id)
+      }      await supabase.from('services').delete().eq('id', id)
     } catch (err) {
       console.warn('Supabase deleteService error:', err.message)
     }
@@ -115,7 +114,6 @@ export const api = {
     try {
       // Delete all associated storage files (cover + gallery) first
       if (imageUrls.length) {
-        const { deleteFilesFromStorage } = await import('./supabaseStorage')
         await deleteFilesFromStorage(imageUrls)
       }
       await supabase.from('portfolio').delete().eq('id', id)

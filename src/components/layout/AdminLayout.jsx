@@ -107,7 +107,7 @@ export default function AdminLayout({ children }) {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wider transition-all ${
                     active
-                      ? 'bg-gradient-to-r from-[#d9a323]/20 to-transparent text-[#d9a323] border-l-4 border-l-[#d9a323]'
+                      ? 'bg-[#d9a323]/10 text-[#d9a323]'
                       : 'text-[#8e9196] hover:text-white hover:bg-white/5'
                   }`}
                 >
