@@ -295,16 +295,27 @@ export default function AdminPortfolioPage() {
                   className="w-4 h-4 text-[#d9a323] rounded focus:ring-0 cursor-pointer"
                 />
                 <label htmlFor="featured-proj" className="text-[#c6c8cc] cursor-pointer">
-                  Feature on Homepage Portfolio Section
+                  Show in featured projects on the homepage
                 </label>
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="project-status" className="text-[#8e9196]">Visibility</label>
-                <select id="project-status" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full bg-[#111111] border border-white/10 rounded-lg p-3 text-white outline-none focus:border-[#d9a323]">
-                  <option value="published">Published · visible on the website</option>
-                  <option value="draft">Draft · hidden from visitors</option>
-                </select>
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-white">Website visibility</p>
+                  <p className="text-xs text-[#8e9196]">
+                    {formData.status === 'published' ? 'Published · visible to visitors' : 'Draft · hidden from visitors'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.status === 'published'}
+                  aria-label="Show project on website"
+                  onClick={() => setFormData({ ...formData, status: formData.status === 'published' ? 'draft' : 'published' })}
+                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d9a323] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111111] ${formData.status === 'published' ? 'bg-emerald-500' : 'bg-white/20'}`}
+                >
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${formData.status === 'published' ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
               </div>
 
               <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
