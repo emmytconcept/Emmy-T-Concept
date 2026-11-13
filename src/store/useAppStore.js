@@ -108,8 +108,16 @@ export const useAppStore = create(
       updatePortfolioCategory: (id, updates) => {
         const current = get().portfolioCategories || []
         const next = current.map((c) => (c.id === id ? { ...c, ...updates } : c))
-        set({ portfolioCategories: next })
+        const changedProjects = []
+        const updatedProjects = get().portfolio.map((project) => {
+          if (project.category !== id || updates.label === undefined) return project
+          const updatedProject = { ...project, categoryLabel: updates.label }
+          changedProjects.push(updatedProject)
+          return updatedProject
+        })
+        set({ portfolioCategories: next, portfolio: updatedProjects })
         api.updateContent('portfolio', 'categories', next)
+        changedProjects.forEach((project) => api.upsertPortfolio(project))
       },
       deletePortfolioCategory: (id) => {
         const current = get().portfolioCategories || []

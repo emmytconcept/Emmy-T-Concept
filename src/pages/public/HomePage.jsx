@@ -418,7 +418,7 @@ export default function HomePage() {
                 : [
                     { id: 'all', label: 'All' },
                     { id: 'business-branding', label: 'Branding' },
-                    { id: 'banner-printing', label: 'Banners' },
+                    { id: 'banner-printing', label: 'Banners & Stickers' },
                     { id: 'packaging-design', label: 'Packaging' },
                     { id: 'clothing-printing', label: 'Apparel' },
                   ]

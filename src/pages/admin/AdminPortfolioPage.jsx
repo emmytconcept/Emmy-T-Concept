@@ -11,6 +11,7 @@ export default function AdminPortfolioPage() {
     deletePortfolioProject,
     portfolioCategories,
     addPortfolioCategory,
+    updatePortfolioCategory,
     deletePortfolioCategory,
   } = useAppStore()
 
@@ -20,13 +21,15 @@ export default function AdminPortfolioPage() {
   // Category Manager modal state
   const [catModalOpen, setCatModalOpen] = useState(false)
   const [newCatLabel, setNewCatLabel] = useState('')
+  const [editingCategoryId, setEditingCategoryId] = useState(null)
+  const [editingCategoryLabel, setEditingCategoryLabel] = useState('')
 
   const activeCategories = portfolioCategories && portfolioCategories.length > 0
     ? portfolioCategories
     : [
         { id: 'all', label: 'All Projects' },
         { id: 'graphic-design', label: 'Graphic Design' },
-        { id: 'banner-printing', label: 'Banners & Signs' },
+        { id: 'banner-printing', label: 'Banners & Stickers' },
         { id: 'business-branding', label: 'Business Branding' },
         { id: 'packaging-design', label: 'Packaging' },
         { id: 'clothing-printing', label: 'Apparel & Fabric' },
@@ -37,7 +40,7 @@ export default function AdminPortfolioPage() {
   const [formData, setFormData] = useState({
     title: '',
     category: selectableCategories[0]?.id || 'banner-printing',
-    categoryLabel: selectableCategories[0]?.label || 'Banners & Signs',
+    categoryLabel: selectableCategories[0]?.label || 'Banners & Stickers',
     image: '',
     images: [],
     description: '',
@@ -48,7 +51,7 @@ export default function AdminPortfolioPage() {
 
   const handleOpenAdd = () => {
     setEditingProject(null)
-    const defaultCat = selectableCategories[0] || { id: 'banner-printing', label: 'Banners & Signs' }
+    const defaultCat = selectableCategories[0] || { id: 'banner-printing', label: 'Banners & Stickers' }
     setFormData({
       title: '',
       category: defaultCat.id,
@@ -122,6 +125,24 @@ export default function AdminPortfolioPage() {
     }
     addPortfolioCategory({ id, label: trimmed })
     setNewCatLabel('')
+  }
+
+  const handleEditCategory = (category) => {
+    setEditingCategoryId(category.id)
+    setEditingCategoryLabel(category.label)
+  }
+
+  const handleSaveCategory = (categoryId) => {
+    const label = editingCategoryLabel.trim()
+    if (!label) return
+    updatePortfolioCategory(categoryId, { label })
+    setEditingCategoryId(null)
+    setEditingCategoryLabel('')
+  }
+
+  const handleCancelEditCategory = () => {
+    setEditingCategoryId(null)
+    setEditingCategoryLabel('')
   }
 
   const handleDeleteCategory = (catId) => {
@@ -249,21 +270,71 @@ export default function AdminPortfolioPage() {
               {activeCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5 text-xs"
+                  className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/5 border border-white/5 text-xs"
                 >
-                  <div>
-                    <span className="font-bold text-white">{cat.label}</span>
-                    <span className="text-[10px] text-[#8e9196] font-mono ml-2">({cat.id})</span>
-                  </div>
-                  {cat.id !== 'all' && (
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteCategory(cat.id)}
-                      className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
-                      title="Remove Category"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  {editingCategoryId === cat.id ? (
+                    <>
+                      <input
+                        type="text"
+                        autoFocus
+                        required
+                        value={editingCategoryLabel}
+                        onChange={(e) => setEditingCategoryLabel(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveCategory(cat.id)
+                          if (e.key === 'Escape') handleCancelEditCategory()
+                        }}
+                        className="flex-1 min-w-0 bg-[#111111] border border-white/10 rounded-lg px-2 py-1.5 text-white outline-none focus:border-[#d9a323]"
+                        aria-label={`Category name for ${cat.id}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSaveCategory(cat.id)}
+                        className="p-1 rounded text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                        title="Save Category Name"
+                        aria-label="Save category name"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditCategory}
+                        className="p-1 rounded text-white/60 hover:bg-white/10 transition-colors"
+                        title="Cancel"
+                        aria-label="Cancel category edit"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="min-w-0">
+                        <span className="font-bold text-white">{cat.label}</span>
+                        <span className="text-[10px] text-[#8e9196] font-mono ml-2">({cat.id})</span>
+                      </div>
+                      {cat.id !== 'all' && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleEditCategory(cat)}
+                            className="p-1 rounded text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                            title="Edit Category Name"
+                            aria-label={`Edit ${cat.label}`}
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
+                            title="Remove Category"
+                            aria-label={`Remove ${cat.label}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
