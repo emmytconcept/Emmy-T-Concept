@@ -36,7 +36,7 @@ const iconMap = {
 }
 
 export default function HomePage() {
-  const { services, portfolio, portfolioCategories, testimonials, companyInfo, submitCustomerReview } = useAppStore()
+  const { services, portfolio, testimonials, companyInfo, submitCustomerReview } = useAppStore()
   const [activeCategory, setActiveCategory] = useState('all')
   const [activeModalProject, setActiveModalProject] = useState(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -54,10 +54,16 @@ export default function HomePage() {
 
   const approvedTestimonials = testimonials.filter((t) => t.approved !== false)
 
-  const featuredServices = services.slice(0, 6)
+  const featuredServices = services.filter((service) => service.featured).slice(0, 6)
+  const publishedPortfolio = portfolio.filter((project) => project.status !== 'draft')
+  const featuredPortfolio = publishedPortfolio.filter((project) => project.featured)
+  const getProjectServiceId = (project) => services.find((service) =>
+    service.id === project.category || service.slug === project.category ||
+    service.name?.toLowerCase() === project.categoryLabel?.toLowerCase()
+  )?.id
   const filteredPortfolio = activeCategory === 'all'
-    ? portfolio.slice(0, 6)
-    : portfolio.filter(p => p.category === activeCategory).slice(0, 6)
+    ? featuredPortfolio.slice(0, 6)
+    : featuredPortfolio.filter((project) => getProjectServiceId(project) === activeCategory).slice(0, 6)
 
   const handleOpenModal = (project) => {
     setActiveModalProject(project)
@@ -171,7 +177,7 @@ export default function HomePage() {
 
             {/* Desktop Panoramic Arc (6 images, sm and up) */}
             <div className="hidden sm:flex items-end justify-center gap-3 lg:gap-4 max-w-6xl mx-auto px-4 [perspective:1200px] min-h-[360px] pb-4">
-              {portfolio.slice(0, 6).map((proj, idx) => {
+              {featuredPortfolio.slice(0, 6).map((proj, idx) => {
                 const configs = [
                   { rotate: '-12deg', y: '16px', scale: '0.94' },
                   { rotate: '-6deg', y: '6px', scale: '0.98' },
@@ -219,7 +225,7 @@ export default function HomePage() {
 
             {/* Mobile Mini Panoramic Arc (3 curated images on the exact same curved stage, < sm) */}
             <div className="flex sm:hidden items-end justify-center gap-2 max-w-sm mx-auto px-2 [perspective:800px] min-h-[280px] pb-4">
-              {portfolio.slice(0, 3).map((proj, idx) => {
+              {featuredPortfolio.slice(0, 3).map((proj, idx) => {
                 if (!proj) return null
                 const mobileConfigs = [
                   { rotate: '-14deg', y: '12px', scale: '0.92', zIndex: 'z-0' },
@@ -317,7 +323,11 @@ export default function HomePage() {
                   className="glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col group"
                 >
                   {/* Service Image Header */}
-                  <div className="relative h-48 overflow-hidden bg-neutral-900">
+                  <Link
+                    to={`/services/${service.slug}`}
+                    aria-label={`View ${service.name} details`}
+                    className="relative h-48 overflow-hidden bg-neutral-900 block"
+                  >
                     <img
                       src={service.image}
                       alt={service.name}
@@ -329,11 +339,11 @@ export default function HomePage() {
                     <div className="absolute top-4 right-4 w-11 h-11 rounded-xl bg-[#080808]/90 border border-[#d9a323]/40 flex items-center justify-center text-[#d9a323] shadow-lg group-hover:bg-[#d9a323] group-hover:text-black transition-colors duration-300">
                       <IconComponent className="w-5 h-5" />
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Body Content */}
                   <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                    <div>
+                    <Link to={`/services/${service.slug}`} className="block">
                       <h3 className="font-heading text-xl font-bold text-white group-hover:text-[#d9a323] transition-colors">
                         {service.name}
                       </h3>
@@ -357,7 +367,7 @@ export default function HomePage() {
                           </span>
                         )}
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Bottom CTA Row */}
                     <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -381,6 +391,11 @@ export default function HomePage() {
               )
             })}
           </div>
+          {featuredServices.length === 0 && (
+            <p className="text-center text-sm text-[#8e9196]">
+              No services are featured right now. Browse all services to explore our offerings.
+            </p>
+          )}
 
           {/* View All CTA */}
           <div className="text-center mt-12">
@@ -413,16 +428,7 @@ export default function HomePage() {
 
             {/* Filter Tabs */}
             <div className="flex flex-wrap gap-2">
-              {(portfolioCategories && portfolioCategories.length > 0
-                ? portfolioCategories.slice(0, 5)
-                : [
-                    { id: 'all', label: 'All' },
-                    { id: 'business-branding', label: 'Branding' },
-                    { id: 'banner-printing', label: 'Banners & Stickers' },
-                    { id: 'packaging-design', label: 'Packaging' },
-                    { id: 'clothing-printing', label: 'Apparel' },
-                  ]
-              ).map((tab) => (
+              {[{ id: 'all', label: 'All' }, ...services.map((service) => ({ id: service.id, label: service.name }))].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveCategory(tab.id)}
@@ -468,7 +474,7 @@ export default function HomePage() {
 
                     {/* Category Tag */}
                     <span className="absolute top-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-[#080808]/90 border border-white/10 text-[#d9a323] backdrop-blur-sm">
-                      {project.categoryLabel}
+                      {services.find((service) => service.id === getProjectServiceId(project))?.name || project.categoryLabel || project.category}
                     </span>
 
                     {projectPhotosCount > 1 && (

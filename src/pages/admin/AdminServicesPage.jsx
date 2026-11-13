@@ -1,12 +1,33 @@
 import React, { useState } from 'react'
-import { Plus, Edit2, Trash2, CheckCircle2, Star, Image, X } from 'lucide-react'
+import { Plus, Edit2, Trash2, CheckCircle2, Star, X, Tag } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import ImageDropzone from '../../components/shared/ImageDropzone'
 
+const categoryIdFromLabel = (label) =>
+  label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+
 export default function AdminServicesPage() {
-  const { services, addService, updateService, deleteService } = useAppStore()
+  const {
+    services,
+    addService,
+    updateService,
+    deleteService,
+    serviceCategories,
+    addServiceCategory,
+    updateServiceCategory,
+    deleteServiceCategory,
+  } = useAppStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingService, setEditingService] = useState(null)
+  const [catModalOpen, setCatModalOpen] = useState(false)
+  const [newCatLabel, setNewCatLabel] = useState('')
+  const [editingCategoryId, setEditingCategoryId] = useState(null)
+  const [editingCategoryLabel, setEditingCategoryLabel] = useState('')
+
+  const activeCategories = serviceCategories.length > 0
+    ? serviceCategories
+    : [...new Set(services.map((service) => service.category?.trim()).filter(Boolean))]
+        .map((label) => ({ id: categoryIdFromLabel(label), label }))
 
   const [formData, setFormData] = useState({
     name: '',
@@ -25,7 +46,7 @@ export default function AdminServicesPage() {
     setFormData({
       name: '',
       slug: '',
-      category: 'Printing',
+      category: activeCategories[0]?.label || '',
       shortDesc: '',
       description: '',
       image: '',
@@ -50,6 +71,48 @@ export default function AdminServicesPage() {
       featured: service.featured || false,
     })
     setModalOpen(true)
+  }
+
+  const handleAddCategory = (e) => {
+    e.preventDefault()
+    const label = newCatLabel.trim()
+    const id = categoryIdFromLabel(label)
+    if (!label || !id) return
+    if (activeCategories.some((category) => category.id === id)) {
+      alert('A category with this ID already exists.')
+      return
+    }
+    addServiceCategory({ id, label })
+    setNewCatLabel('')
+  }
+
+  const handleSaveCategory = (categoryId) => {
+    const label = editingCategoryLabel.trim()
+    if (!label) return
+    if (activeCategories.some((category) =>
+      category.id !== categoryId && category.id === categoryIdFromLabel(label)
+    )) {
+      alert('A category with this ID already exists.')
+      return
+    }
+    updateServiceCategory(categoryId, { label })
+    setEditingCategoryId(null)
+    setEditingCategoryLabel('')
+  }
+
+  const handleDeleteCategory = (category) => {
+    const assignedServices = services.filter((service) => service.category === category.label)
+    const replacement = activeCategories.find((item) => item.id !== category.id)
+    const reassignmentMessage = assignedServices.length
+      ? ` ${assignedServices.length} service${assignedServices.length === 1 ? '' : 's'} will be moved to ${replacement?.label || 'no category'}.`
+      : ''
+    if (window.confirm(`Delete category "${category.label}"?${reassignmentMessage}`)) {
+      deleteServiceCategory(category.id)
+      if (editingCategoryId === category.id) {
+        setEditingCategoryId(null)
+        setEditingCategoryLabel('')
+      }
+    }
   }
 
   const handleSave = (e) => {
@@ -98,12 +161,20 @@ export default function AdminServicesPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="px-5 py-2.5 bg-[#d9a323] hover:brightness-110 text-black text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 shadow"
-        >
-          <Plus className="w-4 h-4" /> Add New Service
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setCatModalOpen(true)}
+            className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
+          >
+            <Tag className="w-3.5 h-3.5 text-[#d9a323]" /> Manage Categories ({activeCategories.length})
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className="px-5 py-2.5 bg-[#d9a323] hover:brightness-110 text-black text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 shadow"
+          >
+            <Plus className="w-4 h-4" /> Add New Service
+          </button>
+        </div>
       </div>
 
       {/* Services Grid */}
@@ -182,6 +253,130 @@ export default function AdminServicesPage() {
         ))}
       </div>
 
+      {catModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setCatModalOpen(false)}
+        >
+          <div
+            className="glass-panel rounded-3xl max-w-md w-full border border-[#d9a323]/40 p-6 sm:p-7 space-y-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Tag className="w-5 h-5 text-[#d9a323]" />
+                <h3 className="font-heading text-lg font-bold text-white">Service Categories</h3>
+              </div>
+              <button onClick={() => setCatModalOpen(false)} className="text-white/60 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              {activeCategories.map((category) => (
+                <div
+                  key={category.id}
+                  className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/5 border border-white/5 text-xs"
+                >
+                  {editingCategoryId === category.id ? (
+                    <>
+                      <input
+                        type="text"
+                        autoFocus
+                        value={editingCategoryLabel}
+                        onChange={(e) => setEditingCategoryLabel(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveCategory(category.id)
+                          if (e.key === 'Escape') {
+                            setEditingCategoryId(null)
+                            setEditingCategoryLabel('')
+                          }
+                        }}
+                        className="flex-1 min-w-0 bg-[#111111] border border-white/10 rounded-lg px-2 py-1.5 text-white outline-none focus:border-[#d9a323]"
+                        aria-label={`Category name for ${category.id}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSaveCategory(category.id)}
+                        className="p-1 rounded text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                        aria-label="Save category name"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingCategoryId(null)
+                          setEditingCategoryLabel('')
+                        }}
+                        className="p-1 rounded text-white/60 hover:bg-white/10 transition-colors"
+                        aria-label="Cancel category edit"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="min-w-0">
+                        <span className="font-bold text-white">{category.label}</span>
+                        <span className="text-[10px] text-[#8e9196] font-mono ml-2">({category.id})</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingCategoryId(category.id)
+                            setEditingCategoryLabel(category.label)
+                          }}
+                          className="p-1 rounded text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                          aria-label={`Edit ${category.label}`}
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCategory(category)}
+                          className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
+                          aria-label={`Remove ${category.label}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+              {activeCategories.length === 0 && (
+                <p className="text-xs text-[#8e9196]">No categories yet. Add one below to assign services.</p>
+              )}
+            </div>
+
+            <form onSubmit={handleAddCategory} className="pt-3 border-t border-white/10 space-y-2 text-xs">
+              <label className="text-[#8e9196] block font-medium">Add New Category</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  value={newCatLabel}
+                  onChange={(e) => setNewCatLabel(e.target.value)}
+                  placeholder="e.g. Large-Format Printing"
+                  className="flex-1 bg-[#111111] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-[#d9a323]"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#d9a323] hover:brightness-110 text-black font-bold uppercase tracking-wider text-[11px] rounded-lg shadow"
+                >
+                  Add
+                </button>
+              </div>
+              <p className="text-[10px] text-[#8e9196]">
+                Categories sync with the service catalog and are available when adding or editing a service.
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Add / Edit Service Modal */}
       {modalOpen && (
         <div
@@ -216,14 +411,20 @@ export default function AdminServicesPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[#8e9196]">Category Group</label>
-                  <input
-                    type="text"
+                  <label className="text-[#8e9196]">Category Group *</label>
+                  <select
+                    required
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    placeholder="e.g. Printing, Design, Corporate"
                     className="w-full bg-[#111111] border border-white/10 rounded-lg p-3 text-white outline-none focus:border-[#d9a323]"
-                  />
+                  >
+                    <option value="" disabled>Select a category</option>
+                    {activeCategories.map((category) => (
+                      <option key={category.id} value={category.label}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

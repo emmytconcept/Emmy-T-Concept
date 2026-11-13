@@ -3,6 +3,17 @@ import { persist } from 'zustand/middleware'
 import { api } from '../lib/supabaseSync'
 import { getSupabaseSessionUser, logoutSupabase } from '../lib/supabaseAuth'
 
+const getServiceCategories = (services = []) => {
+  const categories = new Map()
+  services.forEach((service) => {
+    const label = service.category?.trim()
+    if (!label) return
+    const id = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    if (id && !categories.has(id)) categories.set(id, { id, label })
+  })
+  return [...categories.values()]
+}
+
 export const useAppStore = create(
   persist(
     (set, get) => ({
@@ -62,6 +73,56 @@ export const useAppStore = create(
           services: state.services.filter((s) => s.id !== id),
         }))
         api.deleteService(id, svc?.image)
+      },
+
+      // Service Categories (Managed dynamically in Supabase `content` table)
+      serviceCategories: [],
+      setServiceCategories: (categories) => {
+        set({ serviceCategories: categories })
+        api.updateContent('services', 'categories', categories)
+      },
+      addServiceCategory: (category) => {
+        const current = get().serviceCategories
+        const next = [...(current.length > 0 ? current : getServiceCategories(get().services)), category]
+        set({ serviceCategories: next })
+        api.updateContent('services', 'categories', next)
+      },
+      updateServiceCategory: (id, updates) => {
+        const savedCategories = get().serviceCategories
+        const current = savedCategories.length > 0
+          ? savedCategories
+          : getServiceCategories(get().services)
+        const category = current.find((item) => item.id === id)
+        const next = current.map((item) => (item.id === id ? { ...item, ...updates } : item))
+        const changedServices = []
+        const updatedServices = get().services.map((service) => {
+          if (!category || service.category !== category.label || updates.label === undefined) return service
+          const updatedService = { ...service, category: updates.label }
+          changedServices.push(updatedService)
+          return updatedService
+        })
+        set({ serviceCategories: next, services: updatedServices })
+        api.updateContent('services', 'categories', next)
+        changedServices.forEach((service) => api.upsertService(service))
+      },
+      deleteServiceCategory: (id) => {
+        const savedCategories = get().serviceCategories
+        const current = savedCategories.length > 0
+          ? savedCategories
+          : getServiceCategories(get().services)
+        const category = current.find((item) => item.id === id)
+        const next = current.filter((item) => item.id !== id)
+        const replacement = next[0]?.label || ''
+        const changedServices = []
+        const updatedServices = get().services.map((service) => {
+          if (!category || service.category !== category.label) return service
+          const updatedService = { ...service, category: replacement }
+          changedServices.push(updatedService)
+          return updatedService
+        })
+        set({ serviceCategories: next, services: updatedServices })
+        api.updateContent('services', 'categories', next)
+        changedServices.forEach((service) => api.upsertService(service))
       },
 
       // Portfolio Showcase (Sourced from Supabase `portfolio` table)
@@ -335,6 +396,7 @@ export const useAppStore = create(
             companyInfo: content?.companyInfo || state.companyInfo,
             announcement: content?.announcement || state.announcement,
             portfolioCategories: content?.portfolioCategories || state.portfolioCategories,
+            serviceCategories: content?.serviceCategories ?? getServiceCategories(services ?? state.services),
           }))
         } catch (err) {
           console.warn('syncWithSupabase error:', err)
@@ -349,6 +411,7 @@ export const useAppStore = create(
         companyInfo: state.companyInfo,
         announcement: state.announcement,
         portfolioCategories: state.portfolioCategories,
+        serviceCategories: state.serviceCategories,
         services: state.services,
         portfolio: state.portfolio,
         testimonials: state.testimonials,
@@ -374,6 +437,7 @@ export const useAppStore = create(
           },
           announcement: { active: true, text: "", link: "/quote" },
           portfolioCategories: [],
+          serviceCategories: [],
           services: [],
           portfolio: [],
           testimonials: [],

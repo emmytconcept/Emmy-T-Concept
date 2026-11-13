@@ -77,6 +77,7 @@ export const api = {
         ? data.map((p) => ({
             ...p,
             categoryLabel: p.category_label || p.categoryLabel || p.category,
+            status: p.status || 'published',
             sortOrder: p.sort_order ?? p.sortOrder ?? 0,
           }))
         : []
@@ -348,6 +349,8 @@ export const api = {
           res.announcement = row.value
         } else if (row.section === 'portfolio' && row.key === 'categories') {
           res.portfolioCategories = row.value
+        } else if (row.section === 'services' && row.key === 'categories') {
+          res.serviceCategories = row.value
         }
       })
       return res

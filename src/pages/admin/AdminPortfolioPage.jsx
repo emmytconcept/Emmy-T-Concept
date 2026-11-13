@@ -1,57 +1,41 @@
 import React, { useState } from 'react'
-import { Plus, Edit2, Trash2, Star, Eye, UploadCloud, X, CheckCircle2, Images, Tag } from 'lucide-react'
+import { Plus, Edit2, Trash2, Star, Eye, X, Images, EyeOff } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import ImageDropzone from '../../components/shared/ImageDropzone'
 
 export default function AdminPortfolioPage() {
   const {
     portfolio,
+    services,
     addPortfolioProject,
     updatePortfolioProject,
     deletePortfolioProject,
-    portfolioCategories,
-    addPortfolioCategory,
-    updatePortfolioCategory,
-    deletePortfolioCategory,
   } = useAppStore()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
 
-  // Category Manager modal state
-  const [catModalOpen, setCatModalOpen] = useState(false)
-  const [newCatLabel, setNewCatLabel] = useState('')
-  const [editingCategoryId, setEditingCategoryId] = useState(null)
-  const [editingCategoryLabel, setEditingCategoryLabel] = useState('')
-
-  const activeCategories = portfolioCategories && portfolioCategories.length > 0
-    ? portfolioCategories
-    : [
-        { id: 'all', label: 'All Projects' },
-        { id: 'graphic-design', label: 'Graphic Design' },
-        { id: 'banner-printing', label: 'Banners & Stickers' },
-        { id: 'business-branding', label: 'Business Branding' },
-        { id: 'packaging-design', label: 'Packaging' },
-        { id: 'clothing-printing', label: 'Apparel & Fabric' },
-      ]
-
-  const selectableCategories = activeCategories.filter((c) => c.id !== 'all')
+  const selectableCategories = services.map((service) => ({
+    id: service.id,
+    label: service.name,
+  }))
 
   const [formData, setFormData] = useState({
     title: '',
-    category: selectableCategories[0]?.id || 'banner-printing',
-    categoryLabel: selectableCategories[0]?.label || 'Banners & Stickers',
+    category: selectableCategories[0]?.id || '',
+    categoryLabel: selectableCategories[0]?.label || '',
     image: '',
     images: [],
     description: '',
     client: '',
     date: new Date().getFullYear().toString(),
     featured: true,
+    status: 'published',
   })
 
   const handleOpenAdd = () => {
     setEditingProject(null)
-    const defaultCat = selectableCategories[0] || { id: 'banner-printing', label: 'Banners & Stickers' }
+    const defaultCat = selectableCategories[0] || { id: '', label: '' }
     setFormData({
       title: '',
       category: defaultCat.id,
@@ -62,6 +46,7 @@ export default function AdminPortfolioPage() {
       client: '',
       date: new Date().getFullYear().toString(),
       featured: true,
+      status: 'published',
     })
     setModalOpen(true)
   }
@@ -79,13 +64,14 @@ export default function AdminPortfolioPage() {
       client: proj.client,
       date: proj.date,
       featured: proj.featured || false,
+      status: proj.status || 'published',
     })
     setModalOpen(true)
   }
 
   const handleSave = (e) => {
     e.preventDefault()
-    const foundCat = activeCategories.find((c) => c.id === formData.category)
+    const foundCat = selectableCategories.find((c) => c.id === formData.category)
 
     const galleryList = Array.isArray(formData.images) && formData.images.length > 0
       ? formData.images
@@ -103,6 +89,7 @@ export default function AdminPortfolioPage() {
       client: formData.client || 'Corporate Client',
       date: formData.date || new Date().getFullYear().toString(),
       featured: formData.featured,
+      status: formData.status,
     }
 
     if (editingProject) {
@@ -112,44 +99,6 @@ export default function AdminPortfolioPage() {
     }
 
     setModalOpen(false)
-  }
-
-  const handleAddCategory = (e) => {
-    e.preventDefault()
-    const trimmed = newCatLabel.trim()
-    if (!trimmed) return
-    const id = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-    if (activeCategories.some((c) => c.id === id)) {
-      alert('A category with this ID already exists.')
-      return
-    }
-    addPortfolioCategory({ id, label: trimmed })
-    setNewCatLabel('')
-  }
-
-  const handleEditCategory = (category) => {
-    setEditingCategoryId(category.id)
-    setEditingCategoryLabel(category.label)
-  }
-
-  const handleSaveCategory = (categoryId) => {
-    const label = editingCategoryLabel.trim()
-    if (!label) return
-    updatePortfolioCategory(categoryId, { label })
-    setEditingCategoryId(null)
-    setEditingCategoryLabel('')
-  }
-
-  const handleCancelEditCategory = () => {
-    setEditingCategoryId(null)
-    setEditingCategoryLabel('')
-  }
-
-  const handleDeleteCategory = (catId) => {
-    if (catId === 'all') return
-    if (confirm(`Are you sure you want to delete this category?`)) {
-      deletePortfolioCategory(catId)
-    }
   }
 
   return (
@@ -164,12 +113,6 @@ export default function AdminPortfolioPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setCatModalOpen(true)}
-            className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors"
-          >
-            <Tag className="w-3.5 h-3.5 text-[#d9a323]" /> Manage Categories ({selectableCategories.length})
-          </button>
           <button
             onClick={handleOpenAdd}
             className="px-5 py-2.5 bg-[#d9a323] hover:bg-[#e5b338] text-black text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
@@ -204,6 +147,10 @@ export default function AdminPortfolioPage() {
                       <Star className="w-3 h-3 fill-black" /> Featured
                     </span>
                   )}
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1 shadow ${proj.status === 'draft' ? 'bg-white/15 text-white' : 'bg-emerald-500 text-black'}`}>
+                    {proj.status === 'draft' ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                    {proj.status === 'draft' ? 'Draft' : 'Published'}
+                  </span>
                 </div>
               </div>
 
@@ -220,6 +167,14 @@ export default function AdminPortfolioPage() {
             </div>
 
             <div className="p-4 border-t border-white/5 flex items-center justify-end gap-2 bg-white/[0.02]">
+              <button
+                onClick={() => updatePortfolioProject(proj.id, { status: proj.status === 'draft' ? 'published' : 'draft' })}
+                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center gap-1.5"
+                title={proj.status === 'draft' ? 'Publish Project' : 'Unpublish Project'}
+              >
+                {proj.status === 'draft' ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                {proj.status === 'draft' ? 'Publish' : 'Unpublish'}
+              </button>
               <button
                 onClick={() => handleOpenEdit(proj)}
                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-colors"
@@ -240,132 +195,6 @@ export default function AdminPortfolioPage() {
           </div>
         ))}
       </div>
-
-      {/* =========================================================
-          MODAL: Manage Categories
-      ========================================================= */}
-      {catModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-          onClick={() => setCatModalOpen(false)}
-        >
-          <div
-            className="glass-panel rounded-3xl max-w-md w-full border border-[#d9a323]/40 p-6 sm:p-7 space-y-5 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2">
-                <Tag className="w-5 h-5 text-[#d9a323]" />
-                <h3 className="font-heading text-lg font-bold text-white">
-                  Portfolio Categories
-                </h3>
-              </div>
-              <button onClick={() => setCatModalOpen(false)} className="text-white/60 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Existing Categories List */}
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {activeCategories.map((cat) => (
-                <div
-                  key={cat.id}
-                  className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/5 border border-white/5 text-xs"
-                >
-                  {editingCategoryId === cat.id ? (
-                    <>
-                      <input
-                        type="text"
-                        autoFocus
-                        required
-                        value={editingCategoryLabel}
-                        onChange={(e) => setEditingCategoryLabel(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveCategory(cat.id)
-                          if (e.key === 'Escape') handleCancelEditCategory()
-                        }}
-                        className="flex-1 min-w-0 bg-[#111111] border border-white/10 rounded-lg px-2 py-1.5 text-white outline-none focus:border-[#d9a323]"
-                        aria-label={`Category name for ${cat.id}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSaveCategory(cat.id)}
-                        className="p-1 rounded text-emerald-400 hover:bg-emerald-500/20 transition-colors"
-                        title="Save Category Name"
-                        aria-label="Save category name"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCancelEditCategory}
-                        className="p-1 rounded text-white/60 hover:bg-white/10 transition-colors"
-                        title="Cancel"
-                        aria-label="Cancel category edit"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="min-w-0">
-                        <span className="font-bold text-white">{cat.label}</span>
-                        <span className="text-[10px] text-[#8e9196] font-mono ml-2">({cat.id})</span>
-                      </div>
-                      {cat.id !== 'all' && (
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleEditCategory(cat)}
-                            className="p-1 rounded text-white/60 hover:bg-white/10 hover:text-white transition-colors"
-                            title="Edit Category Name"
-                            aria-label={`Edit ${cat.label}`}
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteCategory(cat.id)}
-                            className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
-                            title="Remove Category"
-                            aria-label={`Remove ${cat.label}`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Add New Category Form */}
-            <form onSubmit={handleAddCategory} className="pt-3 border-t border-white/10 space-y-2 text-xs">
-              <label className="text-[#8e9196] block font-medium">Add New Category</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  value={newCatLabel}
-                  onChange={(e) => setNewCatLabel(e.target.value)}
-                  placeholder="e.g. Vehicle Branding"
-                  className="flex-1 bg-[#111111] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-[#d9a323]"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#d9a323] hover:bg-[#e5b338] text-black font-bold uppercase tracking-wider text-[11px] rounded-lg shadow"
-                >
-                  Add
-                </button>
-              </div>
-              <p className="text-[10px] text-[#8e9196]">
-                Categories sync instantly with Supabase and update across the public portfolio filters.
-              </p>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* =========================================================
           MODAL: Add / Edit Project
@@ -403,15 +232,16 @@ export default function AdminPortfolioPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[#8e9196]">Category Group *</label>
+                  <label className="text-[#8e9196]">Related Service *</label>
                   <select
+                    required
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-[#111111] border border-white/10 rounded-lg p-3 text-white outline-none focus:border-[#d9a323]"
                   >
-                    {selectableCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.label}
+                    {selectableCategories.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.label}
                       </option>
                     ))}
                   </select>
@@ -469,6 +299,14 @@ export default function AdminPortfolioPage() {
                 </label>
               </div>
 
+              <div className="space-y-1">
+                <label htmlFor="project-status" className="text-[#8e9196]">Visibility</label>
+                <select id="project-status" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full bg-[#111111] border border-white/10 rounded-lg p-3 text-white outline-none focus:border-[#d9a323]">
+                  <option value="published">Published · visible on the website</option>
+                  <option value="draft">Draft · hidden from visitors</option>
+                </select>
+              </div>
+
               <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
                 <button
                   type="button"
@@ -481,7 +319,7 @@ export default function AdminPortfolioPage() {
                   type="submit"
                   className="px-6 py-2.5 bg-[#d9a323] hover:bg-[#e5b338] text-black font-bold uppercase tracking-wider rounded-lg shadow-md active:scale-95 transition-all"
                 >
-                  {editingProject ? 'Save Changes' : 'Publish Project'}
+                  {editingProject ? 'Save Changes' : formData.status === 'draft' ? 'Save Draft' : 'Publish Project'}
                 </button>
               </div>
             </form>

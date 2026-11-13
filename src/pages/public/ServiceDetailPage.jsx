@@ -52,13 +52,13 @@ export default function ServiceDetailPage() {
   }
 
   // Related portfolio projects (matching by category or slug, or fallback to top 3 projects)
-  const matchedProjects = portfolio.filter(
+  const matchedProjects = portfolio.filter((project) => project.status !== 'draft').filter(
     (p) =>
       p.category === service.slug ||
       p.category === service.id ||
-      (service.category && p.categoryLabel?.toLowerCase() === service.category.toLowerCase())
+      service.name?.toLowerCase() === p.categoryLabel?.toLowerCase()
   )
-  const relatedProjects = matchedProjects.length > 0 ? matchedProjects.slice(0, 3) : portfolio.slice(0, 3)
+  const relatedProjects = matchedProjects.slice(0, 3)
 
   const handleOpenModal = (project) => {
     setActiveModalProject(project)

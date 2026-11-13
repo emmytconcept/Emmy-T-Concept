@@ -13,18 +13,21 @@ import { WhatsAppIcon } from '../../components/shared/SocialIcons'
 import { useAppStore } from '../../store/useAppStore'
 
 export default function PortfolioPage() {
-  const { portfolio, portfolioCategories, companyInfo } = useAppStore()
+  const { portfolio, services, companyInfo } = useAppStore()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [activeModalProject, setActiveModalProject] = useState(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
 
-  const categories = portfolioCategories && portfolioCategories.length > 0
-    ? portfolioCategories
-    : [{ id: 'all', label: 'All Projects' }]
+  const publishedProjects = portfolio.filter((project) => project.status !== 'draft')
+  const categories = [{ id: 'all', label: 'All Projects' }, ...services.map((service) => ({ id: service.id, label: service.name }))]
+  const getProjectServiceId = (project) => services.find((service) =>
+    service.id === project.category || service.slug === project.category ||
+    service.name?.toLowerCase() === project.categoryLabel?.toLowerCase()
+  )?.id
 
   const filteredProjects = selectedCategory === 'all'
-    ? portfolio
-    : portfolio.filter((p) => p.category === selectedCategory)
+    ? publishedProjects
+    : publishedProjects.filter((p) => getProjectServiceId(p) === selectedCategory)
 
   const handleOpenModal = (project) => {
     setActiveModalProject(project)
@@ -131,7 +134,7 @@ export default function PortfolioPage() {
                   </div>
 
                   <span className="absolute top-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded bg-[#080808]/90 text-[#d9a323] border border-white/10 uppercase tracking-wider backdrop-blur-md">
-                    {project.categoryLabel || project.category}
+                    {services.find((service) => service.id === getProjectServiceId(project))?.name || project.categoryLabel || project.category}
                   </span>
 
                   {projectPhotosCount > 1 && (
